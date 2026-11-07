@@ -1,0 +1,1530 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="description" content="Тренажёр ЕГЭ по профильной математике"><title>Тренажёр ЕГЭ по профилю</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&family=Unbounded:wght@600&display=swap"><style>:root{color-scheme:light}body{margin:0}</style></head><body>
+<style>
+/* Layout: grid-paper desk. Home is a field of 12 numbered tiles (one per exam task); a task opens as a single worksheet column with a figure, the answer written in a bordered blank like the exam form, and an explanation drawer. */
+:root{
+  --bg:#EAEFF6; --grid:#D6DFEC; --surface:#FFFFFF; --soft:#E4EBF6;
+  --ink:#0F1B33; --muted:#566682; --line:#C3CEDF;
+  --accent:#1B4FD6; --accent-ink:#FFFFFF;
+  --s1:#2a78d6; --s2:#eb6834;
+  --ok:#14724A; --ok-bg:#DCF2E7; --bad:#B4281F; --bad-bg:#FBE2DF; --warn:#7A5300; --warn-bg:#FFF0CC;
+  --font-body:'Golos Text',system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;
+  --font-display:'Unbounded','Golos Text',system-ui,sans-serif;
+  --font-mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0D1424; --grid:#162036; --surface:#141D31; --soft:#1B2742;
+  --ink:#E8EEF9; --muted:#93A3C0; --line:#2A3855;
+  --accent:#7B9BFF; --accent-ink:#0B1226;
+  --s1:#3987e5; --s2:#d95926;
+  --ok:#5ED39B; --ok-bg:#12362A; --bad:#FF9A90; --bad-bg:#3A1C1F; --warn:#FFD27A; --warn-bg:#3A2D10;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0D1424; --grid:#162036; --surface:#141D31; --soft:#1B2742;
+  --ink:#E8EEF9; --muted:#93A3C0; --line:#2A3855;
+  --accent:#7B9BFF; --accent-ink:#0B1226;
+  --s1:#3987e5; --s2:#d95926;
+  --ok:#5ED39B; --ok-bg:#12362A; --bad:#FF9A90; --bad-bg:#3A1C1F; --warn:#FFD27A; --warn-bg:#3A2D10;
+  color-scheme:dark}
+
+*{box-sizing:border-box}
+body{
+  background-color:var(--bg);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:24px 24px;
+  color:var(--ink); font-family:var(--font-body); font-size:16px; line-height:1.5;
+  padding-block:24px 56px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+}
+.wrap{max-width:920px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+.tag{font-family:var(--font-mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--font-display);font-weight:600;font-size:clamp(28px,6.5vw,46px);line-height:1.08;letter-spacing:-.02em;margin:6px 0 10px;text-wrap:balance}
+.lead{margin:0;max-width:60ch;color:var(--muted)}
+
+.summary{display:flex;flex-wrap:wrap;gap:8px 24px;font-size:14px;color:var(--muted)}
+.summary b{font-family:var(--font-mono);color:var(--ink);font-weight:700}
+
+.cta{display:flex;align-items:center;justify-content:space-between;gap:16px;width:100%;text-align:left;
+  background:var(--accent);color:var(--accent-ink);border:0;border-radius:10px;padding:18px 20px}
+.cta strong{font-size:18px;font-weight:600}
+.cta span{font-size:14px;opacity:.85}
+.cta:hover{filter:brightness(1.07)}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr));gap:12px}
+.tile{display:grid;gap:6px;min-width:0;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.tile:hover{border-color:var(--accent)}
+.tile .row{display:flex;align-items:baseline;gap:12px}
+.num{font-family:var(--font-mono);font-weight:700;font-size:28px;line-height:1;color:var(--accent)}
+.name{font-weight:600;font-size:17px}
+.meta{font-size:13px;color:var(--muted)}
+.bar{height:6px;background:var(--soft);border-radius:3px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent)}
+.stat{font-family:var(--font-mono);font-size:12px;color:var(--muted)}
+
+.foot{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;font-size:13px;color:var(--muted)}
+.link{background:none;border:0;padding:6px 0;color:var(--accent);font-weight:500;text-decoration:underline;text-underline-offset:3px}
+.link.danger{color:var(--bad)}
+
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.sess{font-family:var(--font-mono);font-size:13px;color:var(--muted)}
+
+.sheet{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:clamp(16px,4vw,28px);display:flex;flex-direction:column;gap:18px;min-width:0}
+.sheet-head{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}
+.chip{font-family:var(--font-mono);font-weight:700;font-size:13px;background:var(--ink);color:var(--surface);border-radius:4px;padding:3px 9px}
+.tname{font-size:14px;color:var(--muted)}
+.q{margin:0;font-size:clamp(18px,2.8vw,22px);line-height:1.7;overflow-wrap:anywhere}
+.q sup,.q sub{line-height:0}
+.fr{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 .2em;line-height:1.2;font-size:.95em}
+.fr i{font-style:normal;padding:0 .3em}
+.fr i:first-child{border-bottom:1.5px solid currentColor}
+
+.figbox{background:var(--soft);border-radius:10px;padding:10px;display:flex;justify-content:center;min-width:0}
+.fig{width:100%;max-width:400px;height:auto;display:block}
+.fig .sk{stroke:var(--ink);fill:none;stroke-width:1.8;stroke-linejoin:round;stroke-linecap:round}
+.fig .sa{stroke:var(--accent);fill:none;stroke-width:2.6;stroke-linejoin:round;stroke-linecap:round}
+.fig .sm{stroke:var(--muted);fill:none;stroke-width:1.2}
+.fig .sg{stroke:var(--line);fill:none;stroke-width:1}
+.fig .sd{stroke-dasharray:5 4}
+.fig .fsft{fill:var(--surface)}
+.fig .fa{fill:var(--accent);stroke:none}
+.fig .fk{fill:var(--ink);stroke:none}
+.fig .fm{fill:var(--muted);stroke:none}
+.fig .fdim{fill:var(--line);stroke:none}
+.fig .fac{fill:var(--accent);fill-opacity:.2;stroke:none}
+.fig .tx{font:600 13px var(--font-body);fill:var(--ink)}
+.fig .ta{font:700 13px var(--font-body);fill:var(--accent)}
+.fig .tm{font:500 11px var(--font-mono);fill:var(--muted)}
+.fig .tc{font:700 13px var(--font-mono);fill:var(--ink)}
+
+.alab{font-family:var(--font-mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.ansrow{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.blank{width:12ch;font-family:var(--font-mono);font-weight:700;font-size:26px;letter-spacing:.12em;text-align:center;
+  background:var(--surface);color:var(--ink);border:2px solid var(--ink);border-radius:4px;padding:8px 10px}
+.blank:disabled{opacity:1;background:var(--soft)}
+.hint{font-size:13px;color:var(--muted);margin:0}
+.btn{background:var(--accent);color:var(--accent-ink);border:0;border-radius:8px;padding:12px 22px;font-weight:600;min-height:48px}
+.btn:hover{filter:brightness(1.08)}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.btn.ghost:hover{border-color:var(--accent);filter:none}
+.btn.small{min-height:40px;padding:8px 16px;font-size:15px}
+
+.fb{border-radius:8px;padding:12px 16px;font-weight:500}
+.fb.ok{background:var(--ok-bg);color:var(--ok)}
+.fb.bad{background:var(--bad-bg);color:var(--bad)}
+.fb.warn{background:var(--warn-bg);color:var(--warn)}
+.fb b{font-family:var(--font-mono)}
+.sol{background:var(--soft);border-radius:8px;padding:12px 16px;font-size:15px}
+.sol .tag{display:block;margin-bottom:4px}
+
+.exp{border:1.5px solid var(--line);border-radius:10px;padding:6px 18px 16px;font-size:15.5px;line-height:1.6}
+.exp h4{font-family:var(--font-mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin:16px 0 6px;font-weight:700}
+.exp p{margin:0}
+.exp ol{margin:0;padding-left:1.4em;display:flex;flex-direction:column;gap:4px}
+.exp .tools{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+
+.segs{display:grid;grid-template-columns:repeat(12,1fr);gap:4px}
+.seg{height:6px;border-radius:3px;background:var(--line)}
+.seg.on{background:var(--accent)}
+.seg.cur{background:var(--ink)}
+
+.score{font-family:var(--font-display);font-weight:600;font-size:clamp(40px,10vw,72px);line-height:1;letter-spacing:-.02em}
+.score small{font-size:.35em;color:var(--muted);letter-spacing:0}
+.list{display:flex;flex-direction:column;border-top:1px solid var(--line)}
+.item{border-bottom:1px solid var(--line);padding:12px 0}
+.item summary{display:grid;grid-template-columns:auto 1fr auto;gap:4px 12px;align-items:baseline;cursor:pointer;list-style:none}
+.item summary::-webkit-details-marker{display:none}
+.item .n{font-family:var(--font-mono);font-weight:700;width:2.4ch}
+.item .t{min-width:0;overflow-wrap:anywhere}
+.item .r{font-family:var(--font-mono);font-size:13px;white-space:nowrap}
+.item .r.ok{color:var(--ok)} .item .r.bad{color:var(--bad)}
+.item .body{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+.item .ans{font-size:14px;color:var(--muted)}
+.item .ans b{font-family:var(--font-mono);color:var(--ink)}
+.item details.inner summary{display:block;color:var(--accent);font-weight:500;text-decoration:underline;text-underline-offset:3px;padding:4px 0}
+
+.sec{display:flex;flex-direction:column;gap:2px;margin-top:8px}
+.sec h2{font-family:var(--font-display);font-weight:600;font-size:clamp(18px,3.4vw,24px);margin:0;letter-spacing:-.01em}
+.sec span{font-size:13px;color:var(--muted)}
+.ctas{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:12px}
+.ctas .cta{flex-direction:column;align-items:flex-start;gap:4px}
+.cta.alt{background:var(--surface);color:var(--ink);border:1.5px solid var(--accent)}
+.cta.alt:hover{filter:none;background:var(--soft)}
+.pts{font-family:var(--font-mono);font-size:12px;background:var(--soft);color:var(--ink);border-radius:4px;padding:2px 8px;white-space:nowrap}
+.tile .row .pts{margin-left:auto}
+.paper{background:var(--warn-bg);color:var(--warn);border-radius:8px;padding:12px 16px;font-size:15px}
+.q.long{font-size:clamp(16.5px,2.5vw,20px);line-height:1.75}
+.ansbox{background:var(--ok-bg);border-radius:8px;padding:12px 16px;font-size:16px;line-height:1.75;overflow-wrap:anywhere}
+.ansbox .tag{display:block;margin-bottom:4px;color:var(--ok)}
+.rubric{font-size:14.5px;line-height:1.6;border:1.5px dashed var(--line);border-radius:8px;padding:12px 16px}
+.scorebtns{display:flex;flex-wrap:wrap;gap:8px}
+.sbtn{min-width:52px;min-height:48px;font-family:var(--font-mono);font-weight:700;font-size:18px;background:var(--surface);border:2px solid var(--line);border-radius:8px}
+.sbtn:hover:not(:disabled){border-color:var(--accent)}
+.sbtn[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.sbtn:disabled{cursor:default;opacity:.65}
+.sbtn[aria-pressed="true"]:disabled{opacity:1}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.item .r.mid{color:var(--warn)}
+.sol .figbox,.sheet .figbox{margin:0}
+
+.tabs{display:flex;gap:4px;border-bottom:2px solid var(--line)}
+.tab{background:none;border:0;border-bottom:3px solid transparent;margin-bottom:-2px;padding:10px 16px;font-weight:600;color:var(--muted)}
+.tab:hover{color:var(--ink)}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.legend{font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 16px}
+.pgroup{font-family:var(--font-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:14px 0 6px;border-bottom:1px solid var(--line)}
+.plist{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px 16px 8px}
+.plist .pgroup:first-child{padding-top:12px}
+.prow{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+.prow:last-child{border-bottom:0}
+.prow .num.sm{font-size:22px;min-width:2ch;text-align:right}
+.pmid{display:flex;flex-direction:column;gap:6px;min-width:0}
+.ptop{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px}
+.pill{font-family:var(--font-mono);font-size:11.5px;font-weight:700;border-radius:4px;padding:2px 8px;white-space:nowrap}
+.pill.lv-good{background:var(--ok-bg);color:var(--ok)}
+.pill.lv-mid{background:var(--warn-bg);color:var(--warn)}
+.pill.lv-weak{background:var(--bad-bg);color:var(--bad)}
+.pill.lv-none{background:var(--soft);color:var(--muted)}
+.bar i.b-good{background:var(--ok)}
+.bar i.b-mid{background:var(--warn)}
+.bar i.b-weak{background:var(--bad)}
+.spark{display:block;flex:none}
+.spark .sp-good{fill:var(--ok)}
+.spark .sp-mid{fill:var(--warn)}
+.spark .sp-weak{fill:var(--bad)}
+.spark .sp-n{fill:var(--line)}
+.empty{background:var(--surface);border:1.5px dashed var(--line);border-radius:12px;padding:18px 20px;line-height:1.6}
+.chartbox{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 12px 10px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.pc{width:100%;height:auto;display:block}
+.pc .pg{stroke:var(--line);stroke-width:1}
+.pc .pax{stroke:var(--muted);stroke-width:1}
+.pc .pmax{stroke:var(--muted);stroke-width:1;stroke-dasharray:4 4}
+.pc text{font:500 11px var(--font-mono);fill:var(--muted)}
+.pc .tv{fill:var(--ink);font-weight:700}
+.pc .s1{fill:var(--s1)}
+.pc .s2{fill:var(--s2)}
+.pc .hit{fill:transparent}
+.pc .bargrp:hover .s1,.pc .bargrp:hover .s2{filter:brightness(1.12)}
+.sw{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.sw.s1{background:var(--s1)}
+.sw.s2{background:var(--s2)}
+.tblwrap{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:12px}
+.rtable{width:100%;border-collapse:collapse;font-size:14.5px}
+.rtable th{font-family:var(--font-mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:left;font-weight:500;padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+.rtable td{padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap;font-variant-numeric:tabular-nums}
+.rtable tr:last-child td{border-bottom:0}
+.rtable td.tot{font-weight:700}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="wrap" id="app"></div>
+
+<script id="gens">
+const ri=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const rnd=x=>Math.round(x*1e9)/1e9;
+const N=n=>String(rnd(n)).replace('.',',').replace('-','−');
+const sg=n=>n<0?' − '+N(-n):' + '+N(n);
+const xs=n=>n===0?'x':'x'+sg(n);
+const fr=(a,b)=>'<span class="fr"><i>'+a+'</i><i>'+b+'</i></span>';
+const lg=b=>'log<sub>'+b+'</sub>';
+const sgn=()=>Math.random()<.5?-1:1;
+function poly(cs){let s='';cs.forEach(([c,v])=>{if(!c)return;const a=Math.abs(c);const body=(a===1&&v)?v:N(a)+v;if(!s)s=(c<0?'−':'')+body;else s+=(c<0?' − ':' + ')+body;});return s||'0';}
+
+/* ---------- объяснение: что знать / как решать / частая ошибка ---------- */
+const E=(know,steps,err)=>'<h4>Что нужно знать</h4><p>'+know+'</p><h4>Как решать</h4><ol>'+steps.map(s=>'<li>'+s+'</li>').join('')+'</ol>'+(err?'<h4>Частая ошибка</h4><p>'+err+'</p>':'');
+
+/* ---------- SVG-примитивы ---------- */
+const f1=n=>Math.round(n*10)/10;
+const SV=(w,h,inner)=>'<svg class="fig" viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Рисунок к задаче">'+inner+'</svg>';
+const L=(x1,y1,x2,y2,c='sk')=>'<line class="'+c+'" x1="'+f1(x1)+'" y1="'+f1(y1)+'" x2="'+f1(x2)+'" y2="'+f1(y2)+'"/>';
+const PG=(pts,c='sk')=>'<polygon class="'+c+'" points="'+pts.map(p=>f1(p[0])+','+f1(p[1])).join(' ')+'"/>';
+const PH=(d,c='sk')=>'<path class="'+c+'" d="'+d+'"/>';
+const TX=(x,y,t,a='middle',c='tx')=>'<text class="'+c+'" x="'+f1(x)+'" y="'+f1(y)+'" text-anchor="'+a+'">'+t+'</text>';
+const DTt=(x,y,r=3.5,c='fa')=>'<circle class="'+c+'" cx="'+f1(x)+'" cy="'+f1(y)+'" r="'+r+'"/>';
+const CI=(x,y,r,c='sk')=>'<circle class="'+c+'" cx="'+f1(x)+'" cy="'+f1(y)+'" r="'+f1(r)+'"/>';
+const EL=(x,y,rx,ry,c='sk')=>'<ellipse class="'+c+'" cx="'+f1(x)+'" cy="'+f1(y)+'" rx="'+f1(rx)+'" ry="'+f1(ry)+'"/>';
+const RC=(x,y,w,h,c='sk',r=0)=>'<rect class="'+c+'" x="'+f1(x)+'" y="'+f1(y)+'" width="'+f1(w)+'" height="'+f1(h)+'" rx="'+r+'"/>';
+const AR=(x1,y1,x2,y2,c='sa')=>{const th=Math.atan2(y2-y1,x2-x1),hl=9,hw=4.5;const bx=x2-hl*Math.cos(th),by=y2-hl*Math.sin(th);const px=-Math.sin(th)*hw,py=Math.cos(th)*hw;
+  return L(x1,y1,bx,by,c)+'<polygon class="'+(c==='sa'?'fa':c==='sk'?'fk':'fm')+'" points="'+f1(x2)+','+f1(y2)+' '+f1(bx+px)+','+f1(by+py)+' '+f1(bx-px)+','+f1(by-py)+'"/>';};
+const RA=(x,y,ux,uy,vx,vy,s=11)=>PH('M'+f1(x+ux*s)+' '+f1(y+uy*s)+'L'+f1(x+ux*s+vx*s)+' '+f1(y+uy*s+vy*s)+'L'+f1(x+vx*s)+' '+f1(y+vy*s));
+
+/* ---------- планиметрия ---------- */
+function triRight(ac,bc,ab,ratio,ang){
+  let w,h;if(ratio<=1){w=230;h=Math.max(70,230*ratio);}else{h=150;w=Math.max(70,150/ratio);}
+  const cx=50,cy=180,ax=cx+w,ay=cy,bx=cx,by=cy-h;
+  let s=PG([[cx,cy],[ax,ay],[bx,by]],'sk fsft')+RA(cx,cy,1,0,0,-1);
+  s+=TX(cx-12,cy+16,'C')+TX(ax+12,ay+16,'A')+TX(bx-14,by-2,'B');
+  if(ac)s+=TX((cx+ax)/2,cy+20,ac);
+  if(bc)s+=TX(cx-10,(cy+by)/2+4,bc,'end');
+  if(ab){s+=TX((ax+bx)/2+10,(ay+by)/2-8,ab,'start');}
+  if(ang){const len=Math.hypot(bx-ax,by-ay),ux=(bx-ax)/len,uy=(by-ay)/len;
+    s+=PH('M'+f1(ax-30)+' '+f1(ay)+'A30 30 0 0 1 '+f1(ax+30*ux)+' '+f1(ay+30*uy),'sa');}
+  return SV(340,215,s);
+}
+function triCirc(ac,bc,ratio){
+  let w,h;if(ratio<=1){w=160;h=Math.max(60,160*ratio);}else{h=120;w=Math.max(60,120/ratio);}
+  const mx=170,my=125;const cx=mx-w/2,cy=my+h/2,ax=mx+w/2,ay=cy,bx=cx,by=my-h/2;const r=Math.hypot(w,h)/2;
+  let s=CI(mx,my,r,'sk')+PG([[cx,cy],[ax,ay],[bx,by]],'sk fsft')+RA(cx,cy,1,0,0,-1)+DTt(mx,my,3);
+  s+=TX(cx-12,cy+16,'C')+TX(ax+12,ay+16,'A')+TX(bx-14,by-4,'B')+TX((cx+ax)/2,cy+18,ac)+TX(cx-8,my+4,bc,'end')+TX(mx+8,my-8,'O','start','tm');
+  return SV(340,260,s);
+}
+function inscribed(arc){
+  const cx=150,cy=118,r=84;const P=phi=>[cx+r*Math.cos(phi*Math.PI/180),cy-r*Math.sin(phi*Math.PI/180)];
+  const A=P(-90-arc/2),C=P(-90+arc/2),B=P(90);
+  let s=CI(cx,cy,r,'sk fsft')+PH('M'+f1(A[0])+' '+f1(A[1])+'A'+r+' '+r+' 0 '+(arc>180?1:0)+' 0 '+f1(C[0])+' '+f1(C[1]),'sa');
+  s+=L(B[0],B[1],A[0],A[1])+L(B[0],B[1],C[0],C[1]);
+  s+=DTt(A[0],A[1],3)+DTt(B[0],B[1],3)+DTt(C[0],C[1],3);
+  s+=TX(A[0]-10,A[1]+14,'A')+TX(C[0]+10,C[1]+14,'C')+TX(B[0],B[1]-8,'B');
+  s+=TX(cx,cy+r+22,'дуга AC = '+arc+'°','middle','ta')+TX(B[0],B[1]+34,'?','middle','ta');
+  return SV(300,250,s);
+}
+function trapezoid(a,b){
+  const mxv=Math.max(a,b),tw=300*a/mxv,bw=300*b/mxv,cx=170;
+  const tl=cx-tw/2,tr=cx+tw/2,bl=cx-bw/2,br=cx+bw/2,ty=50,by=150;
+  const ml=(tl+bl)/2,mr=(tr+br)/2;
+  let s=PG([[bl,by],[br,by],[tr,ty],[tl,ty]],'sk fsft')+L(ml,100,mr,100,'sa sd');
+  s+=TX(cx,ty-10,String(a))+TX(cx,by+20,String(b))+TX(cx,95,'?','middle','ta');
+  return SV(340,185,s);
+}
+function rhombus(d1,d2){
+  const m=Math.max(d1,d2),w=260*d1/m,h=160*d2/m,cx=170,cy=100;
+  const hw=Math.max(60,w)/2,hh=Math.max(40,h)/2;
+  let s=PG([[cx-hw,cy],[cx,cy-hh],[cx+hw,cy],[cx,cy+hh]],'sk fsft')+L(cx-hw,cy,cx+hw,cy,'sm sd')+L(cx,cy-hh,cx,cy+hh,'sm sd')+RA(cx,cy,1,0,0,-1,9);
+  s+=TX(cx-hw/2,cy+17,'d₁ = '+d1,'middle','ta')+TX(cx+8,cy-hh/2+4,'d₂ = '+d2,'start','ta');
+  return SV(340,210,s);
+}
+function isosceles(x){
+  const t=Math.tan(x*Math.PI/360);const h=Math.min(150,125/t),hw=h*t;const cx=170,ay=28;
+  const by=ay+h,bl=cx-hw,br=cx+hw;
+  let s=PG([[cx,ay],[bl,by],[br,by]],'sk fsft');
+  const a1=[cx-22*Math.sin(x*Math.PI/360),ay+22*Math.cos(x*Math.PI/360)],a2=[cx+22*Math.sin(x*Math.PI/360),ay+22*Math.cos(x*Math.PI/360)];
+  s+=PH('M'+f1(a1[0])+' '+f1(a1[1])+'A22 22 0 0 0 '+f1(a2[0])+' '+f1(a2[1]),'sa');
+  s+=TX(cx,ay+46,x+'°','middle','ta')+TX(bl+30,by-8,'?','middle','ta')+TX(br-30,by-8,'?','middle','ta')+TX(cx,ay-8,'')+TX(cx-hw/2-12,ay+h/2,'')+TX(bl-8,by+14,'B','end')+TX(br+8,by+14,'C','start')+TX(cx,ay-8,'A');
+  return SV(340,215,s);
+}
+function triHeight(a,h){
+  const bl=40,br=300,by=175,ax=120,ay=45;
+  let s=PG([[bl,by],[br,by],[ax,ay]],'sk fsft')+L(ax,ay,ax,by,'sa sd')+RA(ax,by,-1,0,0,-1,10);
+  s+=TX((bl+br)/2,by+20,String(a))+TX(ax+8,(ay+by)/2+4,String(h),'start');
+  return SV(340,215,s);
+}
+
+/* ---------- векторы ---------- */
+function bnd(vals){let lo=Math.min(0,...vals)-1,hi=Math.max(0,...vals)+1;while(hi-lo<5){lo-=1;hi+=1;}return[Math.floor(lo),Math.ceil(hi)];}
+function cplane(xmin,xmax,ymin,ymax){
+  const W=340,H=250,m=22;const u=Math.min((W-2*m)/(xmax-xmin),(H-2*m)/(ymax-ymin));
+  const ox=(W-u*(xmax-xmin))/2-xmin*u,oy=(H+u*(ymax-ymin))/2+ymin*u;
+  const X=x=>ox+x*u,Y=y=>oy-y*u;const st=Math.max(1,Math.ceil(Math.max(xmax-xmin,ymax-ymin)/12));
+  let s='';
+  for(let x=Math.ceil(xmin);x<=xmax;x++)s+=L(X(x),Y(ymin),X(x),Y(ymax),'sg');
+  for(let y=Math.ceil(ymin);y<=ymax;y++)s+=L(X(xmin),Y(y),X(xmax),Y(y),'sg');
+  s+=AR(X(xmin),Y(0),X(xmax),Y(0),'sk')+AR(X(0),Y(ymin),X(0),Y(ymax),'sk')+TX(X(xmax)-4,Y(0)-8,'x','end','tm')+TX(X(0)+8,Y(ymax)+8,'y','start','tm');
+  for(let x=Math.ceil(xmin);x<xmax;x+=1)if(x!==0&&x%st===0)s+=TX(X(x),Y(0)+13,N(x),'middle','tm');
+  for(let y=Math.ceil(ymin);y<ymax;y+=1)if(y!==0&&y%st===0)s+=TX(X(0)-5,Y(y)+4,N(y),'end','tm');
+  return{X,Y,u,s,W,H};
+}
+function vecLab(P,x,y,t,c='tx'){return TX(P.X(x)+(x>=0?8:-8),P.Y(y)+(y>=0?-6:15),t,x>=0?'start':'end',c);}
+function figDot(x1,y1,x2,y2){
+  const[xa,xb]=bnd([x1,x2]),[ya,yb]=bnd([y1,y2]);const P=cplane(xa,xb,ya,yb);let s=P.s;
+  s+=AR(P.X(0),P.Y(0),P.X(x1),P.Y(y1),'sa')+vecLab(P,x1,y1,'a','ta')+AR(P.X(0),P.Y(0),P.X(x2),P.Y(y2),'sk')+vecLab(P,x2,y2,'b','tx');
+  return SV(P.W,P.H,s);
+}
+function figSum(x1,y1,x2,y2){
+  const sx=x1+x2,sy=y1+y2;const[xa,xb]=bnd([x1,x2,sx]),[ya,yb]=bnd([y1,y2,sy]);const P=cplane(xa,xb,ya,yb);let s=P.s;
+  s+=L(P.X(x1),P.Y(y1),P.X(sx),P.Y(sy),'sm sd')+L(P.X(x2),P.Y(y2),P.X(sx),P.Y(sy),'sm sd');
+  s+=AR(P.X(0),P.Y(0),P.X(x1),P.Y(y1),'sk')+vecLab(P,x1,y1,'a')+AR(P.X(0),P.Y(0),P.X(x2),P.Y(y2),'sk')+vecLab(P,x2,y2,'b')+AR(P.X(0),P.Y(0),P.X(sx),P.Y(sy),'sa')+vecLab(P,sx,sy,'a + b','ta');
+  return SV(P.W,P.H,s);
+}
+function figAB(x1,y1,x2,y2){
+  const[xa,xb]=bnd([x1,x2]),[ya,yb]=bnd([y1,y2]);const P=cplane(xa,xb,ya,yb);let s=P.s;
+  s+=L(P.X(x1),P.Y(y1),P.X(x2),P.Y(y1),'sm sd')+L(P.X(x2),P.Y(y1),P.X(x2),P.Y(y2),'sm sd')+AR(P.X(x1),P.Y(y1),P.X(x2),P.Y(y2),'sa');
+  s+=DTt(P.X(x1),P.Y(y1),3.5,'fk')+DTt(P.X(x2),P.Y(y2),3.5,'fk')+vecLab(P,x1,y1,'A')+vecLab(P,x2,y2,'B');
+  return SV(P.W,P.H,s);
+}
+function figLin(x1,y1,x2,y2,m,n){
+  const[xa,xb]=bnd([x1,x2,m*x1-n*x2]),[ya,yb]=bnd([y1,y2,m*y1-n*y2]);const P=cplane(xa,xb,ya,yb);let s=P.s;
+  s+=AR(P.X(0),P.Y(0),P.X(x1),P.Y(y1),'sa')+vecLab(P,x1,y1,'a','ta')+AR(P.X(0),P.Y(0),P.X(x2),P.Y(y2),'sk')+vecLab(P,x2,y2,'b','tx');
+  return SV(P.W,P.H,s);
+}
+function figAngle(ma,nb,ang){
+  const sc=190/Math.max(ma,nb),la=ma*sc,lb=nb*sc,ox=60,oy=185,th=ang*Math.PI/180;
+  const bx=ox+lb*Math.cos(th),by=oy-lb*Math.sin(th);
+  let s=AR(ox,oy,ox+la,oy,'sk')+AR(ox,oy,bx,by,'sa');
+  const r=36;s+=PH('M'+f1(ox+r)+' '+oy+'A'+r+' '+r+' 0 0 0 '+f1(ox+r*Math.cos(th))+' '+f1(oy-r*Math.sin(th)),'sm');
+  s+=TX(ox+r+14*Math.cos(th/2)+6,oy-(r+8)*Math.sin(th/2)+4,ang+'°','start','ta')+TX(ox+la/2,oy+20,'|a| = '+ma)+TX(bx+8,by-6,'|b| = '+nb,'start','ta')+DTt(ox,oy,3.5,'fk');
+  return SV(340,225,s);
+}
+
+/* ---------- стереометрия ---------- */
+function cuboid(lp,lq,lr,diag){
+  const F0=[40,190],F1=[190,190],F2=[190,80],F3=[40,80],B0=[110,140],B1=[260,140],B2=[260,30],B3=[110,30];
+  let s=PG([F0,F1,F2,F3],'sk fsft')+PG([F3,B3,B2,F2],'sk fsft')+PG([F1,B1,B2,F2],'sk fsft');
+  s+=L(...F0,...B0,'sm sd')+L(...B0,...B1,'sm sd')+L(...B0,...B3,'sm sd');
+  if(diag)s+=L(...F0,...B2,'sa sd')+TX(98,128,diag,'middle','ta');
+  s+=TX(115,F0[1]+18,lp)+TX(236,170,lq,'start')+TX(30,135,lr,'end');
+  return SV(310,225,s);
+}
+function cylinder(lr,lh){
+  const cx=130,rx=75,ry=24,ty=45,by=165;
+  let s=PH('M'+(cx-rx)+' '+ty+'L'+(cx-rx)+' '+by+'A'+rx+' '+ry+' 0 0 0 '+(cx+rx)+' '+by+'L'+(cx+rx)+' '+ty,'sk fsft')+EL(cx,ty,rx,ry,'sk fsft')+PH('M'+(cx-rx)+' '+by+'A'+rx+' '+ry+' 0 0 1 '+(cx+rx)+' '+by,'sm sd');
+  s+=L(cx,ty,cx+rx,ty,'sa')+DTt(cx,ty,3,'fk')+TX(cx+rx/2,ty-8,lr,'middle','ta')+L(cx+rx+22,ty,cx+rx+22,by,'sm')+TX(cx+rx+30,(ty+by)/2+4,lh,'start','ta');
+  return SV(310,215,s);
+}
+function cone(lh,lS){
+  const cx=130,rx=80,ry=24,ay=25,by=160;
+  let s=PH('M'+(cx-rx)+' '+by+'L'+cx+' '+ay+'L'+(cx+rx)+' '+by+'A'+rx+' '+ry+' 0 0 1 '+(cx-rx)+' '+by,'sk fsft')+PH('M'+(cx-rx)+' '+by+'A'+rx+' '+ry+' 0 0 0 '+(cx+rx)+' '+by,'sm sd');
+  s+=L(cx,ay,cx,by,'sa sd')+DTt(cx,by,3,'fk')+TX(cx+8,(ay+by)/2,lh,'start','ta')+TX(cx,by+ry+20,lS,'middle','ta');
+  return SV(310,225,s);
+}
+function sphere(lr){
+  const cx=130,cy=100,r=80;
+  let s=CI(cx,cy,r,'sk fsft')+PH('M'+(cx-r)+' '+cy+'A'+r+' 26 0 0 0 '+(cx+r)+' '+cy,'sk')+PH('M'+(cx-r)+' '+cy+'A'+r+' 26 0 0 1 '+(cx+r)+' '+cy,'sm sd');
+  s+=L(cx,cy,cx+r,cy,'sa')+DTt(cx,cy,3,'fk')+TX(cx+r/2,cy-8,lr,'middle','ta');
+  return SV(260,200,s);
+}
+function pyramid(la,lh){
+  const A=[40,175],B=[185,175],C=[245,140],D=[100,140],O=[142.5,157.5],T=[142.5,28];
+  let s=PG([A,B,C,D],'sk fsft')+L(...T,...A)+L(...T,...B)+L(...T,...C)+L(...T,...D,'sm sd')+L(...A,...D,'sm sd')+L(...D,...C,'sm sd');
+  s+=L(...T,...O,'sa sd')+DTt(O[0],O[1],3,'fk')+TX(O[0]+8,95,lh,'start','ta')+TX((A[0]+B[0])/2,A[1]+20,la,'middle','tx');
+  return SV(300,215,s);
+}
+
+/* ---------- вероятность ---------- */
+function dots(n,k,labA,labB){
+  const cols=n<=50?10:n<=100?20:25,rows=Math.ceil(n/cols),cell=Math.min(300/cols,150/rows,26),x0=24,y0=14;
+  let s='';for(let i=0;i<n;i++){const c=i%cols,r=Math.floor(i/cols);s+=DTt(x0+c*cell+cell/2,y0+r*cell+cell/2,cell*.36,i<k?'fa':'fdim');}
+  const ly=y0+rows*cell+22;
+  s+=DTt(30,ly-4,6,'fa')+TX(42,ly,labA+': '+k,'start')+DTt(190,ly-4,6,'fdim')+TX(202,ly,labB+': '+(n-k),'start');
+  return SV(340,ly+14,s);
+}
+function pbar(p,labA,labB){
+  const w=320,x0=10;let s=RC(x0,30,w*p,40,'fa')+RC(x0+w*p,30,w*(1-p),40,'fdim');
+  s+=TX(x0+w*p/2,56,N(p),'middle','tx').replace('class="tx"','class="tx" style="fill:var(--accent-ink)"')+TX(x0,22,labA,'start','ta')+TX(x0+w,22,labB+' = ?','end','tx')+TX(x0,92,'вся длина полосы = 1','start','tm');
+  return SV(340,105,s);
+}
+function outcomes(){
+  const out=[];for(let i=0;i<8;i++){out.push(((i&4)?'Р':'О')+((i&2)?'Р':'О')+((i&1)?'Р':'О'));}
+  let s='';out.forEach((o,i)=>{const c=i%4,r=Math.floor(i/4);s+=RC(14+c*80,14+r*46,70,36,'sk fsft',6)+TX(49+c*80,38+r*46,o,'middle','tc');});
+  s+=TX(14,118,'О — орёл, Р — решка. Всего 8 исходов.','start','tm');
+  return SV(340,130,s);
+}
+function tree(root,br){
+  let s='';const ys1=br.map((b,i)=>br.length===2?(i?165:65):0);
+  br.forEach((b,i)=>{const y1=ys1[i];s+=L(30,115,150,y1)+TX(80,(115+y1)/2+(i?16:-6),b.p,'middle','ta')+DTt(150,y1,3.5,'fk')+TX(150,y1-(i?-18:10),b.l,'middle','tx');
+    b.c.forEach((c,j)=>{const y2=y1+(j?28:-28);s+=L(150,y1,275,y2,'sm')+TX(212,(y1+y2)/2+(j?14:-4),c.p,'middle','tm')+DTt(275,y2,3,'fk')+TX(283,y2+4,c.l,'start','tx');});});
+  s+=DTt(30,115,4,'fk')+TX(30,102,root,'middle','tm');
+  return SV(380,230,s);
+}
+function twoMachines(p){
+  let s='';[0,1].forEach(i=>{const x=30+i*170;s+=RC(x,30,130,70,'sk fsft',8)+TX(x+65,56,'Автомат '+(i+1),'middle','tx')+TX(x+65,82,'неисправен: '+N(p),'middle','tm');});
+  s+=TX(170,128,'работают независимо друг от друга','middle','tm');
+  return SV(340,145,s);
+}
+
+/* ---------- графики ---------- */
+let _pid=0;
+function yrange(fs,x0,x1){let lo=Infinity,hi=-Infinity;for(let i=0;i<=200;i++){const x=x0+(x1-x0)*i/200;fs.forEach(f=>{const y=f(x);if(isFinite(y)&&Math.abs(y)<1e5){lo=Math.min(lo,y);hi=Math.max(hi,y);}});}
+  if(!isFinite(lo)){lo=-1;hi=1;}const pad=(hi-lo)*.14||1;return[lo-pad,hi+pad];}
+function plot(o){
+  const W=380,H=250,ml=36,mr=14,mt=14,mb=28;const{xmin,xmax}=o;let{ymin,ymax}=o;
+  if(ymin===undefined){[ymin,ymax]=yrange(o.curves.map(c=>c.f),xmin,xmax);}
+  const X=x=>ml+(x-xmin)/(xmax-xmin)*(W-ml-mr),Y=y=>H-mb-(y-ymin)/(ymax-ymin)*(H-mt-mb);
+  const id='clp'+(++_pid);const tk=o.ticks===undefined?'xy':(o.ticks||'');
+  const step=r=>{const raw=r/7,p=Math.pow(10,Math.floor(Math.log10(raw))),m=raw/p;return(m<=1?1:m<=2?2:m<=5?5:10)*p;};
+  const sx=step(xmax-xmin),sy=step(ymax-ymin);
+  let s='<defs><clipPath id="'+id+'"><rect x="'+ml+'" y="'+mt+'" width="'+(W-ml-mr)+'" height="'+(H-mt-mb)+'"/></clipPath></defs>';
+  for(let i=Math.ceil(xmin/sx-1e-9);i*sx<=xmax+1e-9;i++){const x=i*sx;s+=L(X(x),mt,X(x),H-mb,'sg');if(tk.indexOf('x')>=0&&Math.abs(x)>1e-9)s+=TX(X(x),H-mb+14,N(x),'middle','tm');}
+  for(let i=Math.ceil(ymin/sy-1e-9);i*sy<=ymax+1e-9;i++){const y=i*sy;s+=L(ml,Y(y),W-mr,Y(y),'sg');if(tk.indexOf('y')>=0&&Math.abs(y)>1e-9)s+=TX(ml-4,Y(y)+4,N(y),'end','tm');}
+  s+=L(ml,mt,ml,H-mb,'sm')+L(ml,H-mb,W-mr,H-mb,'sm');
+  if(xmin<=0&&xmax>=0)s+=L(X(0),mt,X(0),H-mb,'sk');
+  if(ymin<=0&&ymax>=0)s+=L(ml,Y(0),W-mr,Y(0),'sk');
+  s+=TX(W-mr-2,(ymin<=0&&ymax>=0?Y(0):H-mb)-6,o.xl||'x','end','tm')+TX((xmin<=0&&xmax>=0?X(0):ml)+6,mt+10,o.yl||'y','start','tm');
+  let g='';
+  if(o.band)g+=RC(X(o.band[0]),mt,X(o.band[1])-X(o.band[0]),H-mt-mb,'fac');
+  if(o.shade){const[a,b,f]=o.shade;const pts=[];for(let i=0;i<=60;i++){const x=a+(b-a)*i/60;pts.push([X(x),Y(f(x))]);}pts.push([X(b),Y(0)],[X(a),Y(0)]);g+=PG(pts,'fac');}
+  (o.hl||[]).forEach(h=>{g+=L(ml,Y(h.y),W-mr,Y(h.y),'sa sd');});
+  (o.vl||[]).forEach(v=>{g+=L(X(v.x),mt,X(v.x),H-mb,'sm sd');});
+  o.curves.forEach(c=>{let d='',pen=false,py0=null;for(let i=0;i<=360;i++){const x=xmin+(xmax-xmin)*i/360,y=c.f(x);if(!isFinite(y)||Math.abs(y)>1e5){pen=false;py0=null;continue;}const py=Y(y);
+      if(py0!==null&&Math.abs(py-py0)>120&&((y>0)!==(c.f(x-(xmax-xmin)/360)>0)))pen=false;
+      if(py<mt-600||py>H+600){pen=false;py0=null;continue;}
+      d+=(pen?'L':'M')+f1(X(x))+' '+f1(py);pen=true;py0=py;}
+    g+=PH(d,c.cls||'sa');});
+  s+='<g clip-path="url(#'+id+')">'+g+'</g>';
+  (o.hl||[]).forEach(h=>{if(h.label)s+=TX(W-mr-2,Y(h.y)-5,h.label,'end','ta');});
+  (o.vl||[]).forEach(v=>{if(v.label)s+=TX(X(v.x)+4,mt+22,v.label,'start','tm');});
+  (o.pts||[]).forEach(p=>{s+=DTt(X(p.x),Y(p.y),4,'fa');if(p.label)s+=TX(X(p.x)+(p.dx===undefined?8:p.dx),Y(p.y)+(p.dy===undefined?-8:p.dy),p.label,p.dx<0?'end':'start','tx');});
+  return SV(W,H,s);
+}
+
+/* ---------- тригонометрия ---------- */
+function unitCircle(angDeg,labQ){
+  const cx=120,cy=120,r=95,th=angDeg*Math.PI/180;const px=cx+r*Math.cos(th),py=cy-r*Math.sin(th);
+  let s=CI(cx,cy,r,'sk fsft')+AR(cx-r-18,cy,cx+r+22,cy,'sk')+AR(cx,cy+r+18,cx,cy-r-22,'sk');
+  s+=L(cx,cy,px,py,'sa')+L(px,py,px,cy,'sm sd')+L(px,py,cx,py,'sm sd')+DTt(px,py,4,'fa')+DTt(cx,cy,3,'fk');
+  const a0=0,a1=th,rr=24;const ex=cx+rr*Math.cos(a1),ey=cy-rr*Math.sin(a1);
+  s+=PH('M'+(cx+rr)+' '+cy+'A'+rr+' '+rr+' 0 '+(Math.abs(angDeg)>180?1:0)+' '+(angDeg>=0?0:1)+' '+f1(ex)+' '+f1(ey),'sm');
+  s+=TX(cx+r+20,cy+16,'x','end','tm')+TX(cx+8,cy-r-14,'y','start','tm')+TX(px+(px>=cx?8:-8),py+(py<=cy?-6:14),'α','middle','ta')+TX(cx,cy+r+34,labQ,'middle','tm');
+  return SV(250,265,s);
+}
+function tri30(){
+  let s=PG([[50,160],[230,160],[50,56]],'sk fsft')+RA(50,160,1,0,0,-1)+TX(140,180,'√3')+TX(38,112,'1','end')+TX(150,96,'2','start')+TX(210,150,'30°','middle','ta')+TX(70,86,'60°','start','ta');
+  return SV(300,200,s);
+}
+function tri45(){
+  let s=PG([[60,160],[200,160],[60,20]],'sk fsft')+RA(60,160,1,0,0,-1)+TX(130,180,'1')+TX(48,95,'1','end')+TX(145,80,'√2','start')+TX(170,150,'45°','middle','ta')+TX(76,50,'45°','start','ta');
+  return SV(280,200,s);
+}
+
+/* ---------- схемы текстовых задач ---------- */
+function figBoat(d1,d2,c){
+  let s=RC(10,20,320,120,'fac')+L(10,20,330,20,'sm')+L(10,140,330,140,'sm');
+  s+=AR(80,72,26,72,'sa')+TX(90,70,'против течения: '+d1+' км','start','tx')+AR(26,110,314,110,'sa')+TX(30,104,'по течению: '+d2+' км','start','tx');
+  s+=AR(20,38,100,38,'fm')+TX(108,42,'течение '+c+' км/ч','start','tm');
+  return SV(340,155,s);
+}
+function figPipes(a,b){
+  let s=RC(110,110,120,60,'sk fsft',6)+L(30,50,30,80)+L(30,80,140,80)+L(140,80,140,110)+L(200,50,200,110)+L(200,110,200,110);
+  s+=RC(10,24,50,28,'sk fsft',4)+TX(35,43,'труба 1','middle','tm')+RC(175,24,50,28,'sk fsft',4)+TX(200,43,'труба 2','middle','tm');
+  s+=TX(18,70,a+' мин','start','ta')+TX(210,74,b+' мин','start','ta')+TX(170,146,'вместе: ? мин','middle','ta');
+  return SV(340,185,s);
+}
+function figMeet(D,v1,v2){
+  let s=L(30,90,310,90,'sm')+DTt(30,90,6,'fk')+DTt(310,90,6,'fk')+TX(30,115,'A')+TX(310,115,'B')+AR(40,70,150,70,'sa')+AR(300,70,190,70,'sk')+TX(95,60,v1+' км/ч','middle','ta')+TX(245,60,v2+' км/ч','middle','tx');
+  s+=L(30,150,310,150,'sm')+L(30,144,30,156,'sm')+L(310,144,310,156,'sm')+TX(170,170,D+' км','middle','tx');
+  return SV(340,185,s);
+}
+function figPercent(p1,p2){
+  const h0=100,h1=100*(1+p1/100),h2=h1*(1-p2/100);const m=Math.max(h1,h0),sc=110/m;
+  let s='';[[h0,'цена','fdim'],[h1,'+'+p1+'%','fa'],[h2,'−'+p2+'%','fa']].forEach(([h,l,c],i)=>{const x=40+i*100;s+=RC(x,150-h*sc,60,h*sc,c)+TX(x+30,168,l,'middle','tx');});
+  s+=TX(270,50,'после двух','start','tm')+TX(270,66,'изменений: ?','start','ta');
+  return SV(340,185,s);
+}
+function figAvg(v1,v2){
+  let s=L(30,90,310,90,'sm')+L(170,80,170,100,'sm')+DTt(30,90,5,'fk')+DTt(310,90,5,'fk')+AR(36,70,160,70,'sa')+AR(176,70,300,70,'sk')+TX(98,60,v1+' км/ч','middle','ta')+TX(238,60,v2+' км/ч','middle','tx')+TX(98,114,'первая половина','middle','tm')+TX(238,114,'вторая половина','middle','tm');
+  return SV(340,135,s);
+}
+
+const T=[];
+function def(n,name,hint,gens){T.push({n,name,hint,gens});}
+
+/* 1. Планиметрия */
+const TR=[[3,4,5],[5,12,13],[8,15,17],[7,24,25]];
+def(1,'Планиметрия','Треугольники, окружность, четырёхугольники',[
+ ()=>{const [a,b,c]=pick(TR);const k=a===3?ri(1,5):ri(1,2);const A=a*k,B=b*k,C=c*k;
+  return{q:`В прямоугольном треугольнике катеты равны ${A} и ${B}. Найдите гипотенузу.`,a:C,fig:triRight(String(A),String(B),'?',B/A),
+   th:E('Теорема Пифагора: в прямоугольном треугольнике квадрат гипотенузы равен сумме квадратов катетов, c² = a² + b². Гипотенуза лежит напротив прямого угла и всегда самая длинная сторона.',['Определите, какие стороны катеты, а какая гипотенуза (на рисунке она отмечена знаком вопроса).','Возведите оба катета в квадрат и сложите результаты.','Извлеките квадратный корень из суммы.'],'Нельзя складывать сами катеты: сначала квадраты, потом корень. Полезно помнить «египетские» тройки 3-4-5, 5-12-13, 8-15-17, 7-24-25 и числа, кратные им: в такой задаче корень извлекается нацело.'),
+   sol:`По теореме Пифагора гипотенуза равна √(${A*A} + ${B*B}) = √${C*C} = ${C}.`};},
+ ()=>{const k=ri(1,6),t=ri(0,2);
+  const th=E('В прямоугольном треугольнике для острого угла A: sin A = противолежащий катет : гипотенуза, cos A = прилежащий катет : гипотенуза, tg A = противолежащий катет : прилежащий катет. Противолежащий катет — тот, что не касается вершины A.',['Нарисуйте треугольник и отметьте угол A (дуга на рисунке).','Выясните, какая сторона противолежит углу A, какая прилежит, и найдите недостающую по теореме Пифагора.','Составьте нужное отношение сторон и сократите дробь.','Запишите ответ десятичной дробью.'],'Путают прилежащий и противолежащий катеты. Проверка: синус и косинус острого угла всегда меньше 1, так как катет короче гипотенузы.');
+  if(t===0)return{q:`В треугольнике ABC угол C равен 90°, AC = ${4*k}, AB = ${5*k}. Найдите sin A.`,a:.6,fig:triRight(String(4*k),'',String(5*k),.75,true),th,sol:`BC = √(${25*k*k} − ${16*k*k}) = ${3*k}. sin A = BC : AB = ${3*k} : ${5*k} = 0,6.`};
+  if(t===1)return{q:`В треугольнике ABC угол C равен 90°, BC = ${3*k}, AB = ${5*k}. Найдите cos A.`,a:.8,fig:triRight('',String(3*k),String(5*k),.75,true),th,sol:`AC = √(${25*k*k} − ${9*k*k}) = ${4*k}. cos A = AC : AB = ${4*k} : ${5*k} = 0,8.`};
+  return{q:`В треугольнике ABC угол C равен 90°, AC = ${4*k}, BC = ${3*k}. Найдите tg A.`,a:.75,fig:triRight(String(4*k),String(3*k),'',.75,true),th,sol:`tg A = BC : AC = ${3*k} : ${4*k} = 0,75.`};},
+ ()=>{const arc=2*ri(20,160);
+  return{q:`Дуга AC окружности, не содержащая точки B, равна ${arc}°. Найдите вписанный угол ABC. Ответ дайте в градусах.`,a:arc/2,fig:inscribed(arc),
+   th:E('Вписанный угол — угол, вершина которого лежит на окружности, а стороны пересекают её. Он равен половине дуги, на которую опирается. Центральный угол (вершина в центре) равен самой дуге.',['Найдите дугу, на которую опирается угол ABC: это дуга AC, внутри которой нет вершины B (она выделена цветом).','Разделите её градусную меру на 2.'],'Берут дугу с другой стороны или забывают разделить на 2. Если дуга больше 180°, вписанный угол всё равно равен её половине (получится тупой угол).'),
+   sol:`Вписанный угол равен половине дуги, на которую опирается: ${arc}° : 2 = ${arc/2}°.`};},
+ ()=>{const a=ri(2,20);let b=ri(2,20);while(b===a)b=ri(2,20);
+  return{q:`Основания трапеции равны ${a} и ${b}. Найдите среднюю линию трапеции.`,a:(a+b)/2,fig:trapezoid(a,b),
+   th:E('Средняя линия трапеции соединяет середины боковых сторон. Она параллельна основаниям и равна их полусумме: m = (a + b) : 2.',['Определите основания: это две параллельные стороны.','Сложите их длины.','Разделите сумму на 2. Результат лежит между длинами оснований.'],'Подставляют в формулу боковые стороны. Они в этой задаче не нужны.'),
+   sol:`Средняя линия равна полусумме оснований: (${a} + ${b}) : 2 = ${N((a+b)/2)}.`};},
+ ()=>{const d1=ri(4,20),d2=ri(4,20);
+  return{q:`Диагонали ромба равны ${d1} и ${d2}. Найдите его площадь.`,a:d1*d2/2,fig:rhombus(d1,d2),
+   th:E('Диагонали ромба перпендикулярны и делят его на четыре равных прямоугольных треугольника. Площадь ромба равна половине произведения диагоналей: S = d₁·d₂ : 2.',['Перемножьте длины диагоналей.','Разделите произведение на 2.'],'Забывают делить на 2. Произведение диагоналей — площадь прямоугольника, в который ромб вписан, а ромб занимает ровно половину.'),
+   sol:`Площадь ромба равна половине произведения диагоналей: ${d1}·${d2} : 2 = ${N(d1*d2/2)}.`};},
+ ()=>{const k=ri(1,6);
+  return{q:`Катеты прямоугольного треугольника равны ${3*k} и ${4*k}. Найдите радиус описанной около него окружности.`,a:2.5*k,fig:triCirc(String(4*k),String(3*k),.75),
+   th:E('Прямой вписанный угол опирается на диаметр. Поэтому центр окружности, описанной около прямоугольного треугольника, лежит на середине гипотенузы, а радиус равен половине гипотенузы: R = c : 2.',['Найдите гипотенузу по теореме Пифагора (здесь работает тройка 3-4-5).','Разделите гипотенузу на 2.'],'Берут радиус равным гипотенузе или большему катету. Гипотенуза — это диаметр.'),
+   sol:`Гипотенуза равна ${5*k}. Центр описанной окружности лежит на середине гипотенузы, поэтому R = ${5*k} : 2 = ${N(2.5*k)}.`};},
+ ()=>{const x=2*ri(10,70);
+  return{q:`В равнобедренном треугольнике угол при вершине равен ${x}°. Найдите угол при основании. Ответ дайте в градусах.`,a:(180-x)/2,fig:isosceles(x),
+   th:E('Сумма углов треугольника равна 180°. В равнобедренном треугольнике углы при основании равны между собой.',['Вычтите угол при вершине из 180°. Получится сумма двух углов при основании.','Разделите остаток пополам.'],'Вычитают угол из 90° или забывают разделить пополам.'),
+   sol:`Сумма углов треугольника 180°, углы при основании равны. (180° − ${x}°) : 2 = ${(180-x)/2}°.`};},
+ ()=>{const a=ri(3,20),h=ri(3,20);
+  return{q:`Сторона треугольника равна ${a}, высота, проведённая к ней, равна ${h}. Найдите площадь треугольника.`,a:a*h/2,fig:triHeight(a,h),
+   th:E('Площадь треугольника равна половине произведения стороны на высоту, проведённую к этой стороне: S = ½·a·h. Высота перпендикулярна стороне (на рисунке отмечен прямой угол).',['Убедитесь, что высота проведена именно к данной стороне.','Перемножьте сторону и высоту.','Разделите на 2.'],'Умножают сторону на другую сторону вместо высоты, а также забывают делить на 2.'),
+   sol:`S = ½·${a}·${h} = ${N(a*h/2)}.`};},
+ ()=>{const [a,b,c]=pick(TR);const k=a===3?ri(1,4):ri(1,2);
+  return{q:`В прямоугольном треугольнике один из катетов равен ${a*k}, а гипотенуза равна ${c*k}. Найдите площадь треугольника.`,a:a*b*k*k/2,fig:triRight(String(a*k),'?',String(c*k),b/a),
+   th:E('Площадь прямоугольного треугольника равна половине произведения катетов, потому что один катет можно считать основанием, а другой — высотой. Недостающий катет находится по теореме Пифагора: a² = c² − b².',['Найдите второй катет: из квадрата гипотенузы вычтите квадрат известного катета и извлеките корень.','Вычислите ½·(катет)·(катет).'],'Умножают катет на гипотенузу. Гипотенуза в формуле площади не участвует.'),
+   sol:`Второй катет равен √(${(c*k)**2} − ${(a*k)**2}) = ${b*k}. Площадь: ½·${a*k}·${b*k} = ${N(a*b*k*k/2)}.`};}
+]);
+
+/* 2. Векторы */
+const VT=[[3,4,5],[6,8,10],[5,12,13],[8,6,10],[12,5,13],[15,8,17],[9,12,15],[4,3,5]];
+def(2,'Векторы','Координаты, длина, скалярное произведение',[
+ ()=>{const x1=ri(-6,6),y1=ri(-6,6),x2=ri(-6,6),y2=ri(-6,6);const r=x1*x2+y1*y2;
+  return{q:`Даны векторы a(${N(x1)}; ${N(y1)}) и b(${N(x2)}; ${N(y2)}). Найдите скалярное произведение a·b.`,a:r,fig:figDot(x1,y1,x2,y2),
+   th:E('Скалярное произведение векторов a(x₁; y₁) и b(x₂; y₂) равно x₁·x₂ + y₁·y₂. Результат — число, а не вектор.',['Перемножьте первые координаты.','Перемножьте вторые координаты.','Сложите два произведения, аккуратно считая знаки.'],'Ошибки в знаках: произведение двух отрицательных чисел положительно, а положительного и отрицательного — отрицательно.'),
+   sol:`a·b = x₁x₂ + y₁y₂ = ${N(x1)}·${N(x2)} + ${N(y1)}·${N(y2)} = ${N(r)}.`};},
+ ()=>{const [u,v,l]=pick(VT);const su=sgn()*u,sv=sgn()*v;const x1=ri(-7,7),y1=ri(-7,7);const x2=su-x1,y2=sv-y1;
+  return{q:`Даны векторы a(${N(x1)}; ${N(y1)}) и b(${N(x2)}; ${N(y2)}). Найдите длину вектора a + b.`,a:l,fig:figSum(x1,y1,x2,y2),
+   th:E('При сложении векторов складываются их соответствующие координаты: a + b = (x₁ + x₂; y₁ + y₂). Длина вектора (u; v) равна √(u² + v²). На рисунке сумма — диагональ параллелограмма, построенного на векторах.',['Найдите координаты a + b.','Возведите обе координаты суммы в квадрат и сложите.','Извлеките корень.'],'Складывают длины векторов вместо координат: |a + b| не равно |a| + |b|.'),
+   sol:`a + b = (${N(su)}; ${N(sv)}). Длина: √(${u*u} + ${v*v}) = √${l*l} = ${l}.`};},
+ ()=>{const [u,v,l]=pick(VT);const x1=ri(-6,6),y1=ri(-6,6);const x2=x1+sgn()*u,y2=y1+sgn()*v;
+  return{q:`Найдите длину вектора AB, если A(${N(x1)}; ${N(y1)}) и B(${N(x2)}; ${N(y2)}).`,a:l,fig:figAB(x1,y1,x2,y2),
+   th:E('Координаты вектора AB равны координатам конца минус координаты начала: AB = (x_B − x_A; y_B − y_A). Длина вектора — это расстояние между точками, √(u² + v²). Пунктирные катеты на рисунке — это приращения по x и по y.',['Вычтите координаты начала из координат конца.','Возведите полученные числа в квадрат и сложите.','Извлеките корень из суммы.'],'Вычитают в обратном порядке (A − B). На длину это не влияет, но координаты вектора получаются с обратными знаками.'),
+   sol:`AB = (${N(x2-x1)}; ${N(y2-y1)}). Длина: √(${u*u} + ${v*v}) = ${l}.`};},
+ ()=>{const [m,n]=pick([[2,3],[3,2],[2,1],[3,1],[1,2],[4,1]]);const x1=ri(-5,5),y1=ri(-5,5),x2=ri(-5,5),y2=ri(-5,5);
+  const cx=m*x1-n*x2,cy=m*y1-n*y2;
+  return{q:`Даны векторы a(${N(x1)}; ${N(y1)}) и b(${N(x2)}; ${N(y2)}). Найдите сумму координат вектора ${m===1?'':m}a − ${n===1?'':n}b.`,a:cx+cy,fig:figLin(x1,y1,x2,y2,m,n),
+   th:E('При умножении вектора на число умножаются обе его координаты. При вычитании векторов вычитаются соответствующие координаты: m·a − n·b = (m·x₁ − n·x₂; m·y₁ − n·y₂).',['Умножьте координаты a на первое число, координаты b на второе.','Вычтите координаты по парам и получите вектор.','Сложите две координаты получившегося вектора.'],'Умножают на число только одну координату или забывают, что вычитание меняет знаки у обеих координат b.'),
+   sol:`${m===1?'':m}a − ${n===1?'':n}b = (${N(cx)}; ${N(cy)}). Сумма координат: ${N(cx+cy)}.`};},
+ ()=>{const m=ri(2,10),n=ri(2,10),ang=pick([60,120]);const r=ang===60?m*n/2:-m*n/2;
+  return{q:`Длины векторов a и b равны ${m} и ${n}, угол между ними равен ${ang}°. Найдите скалярное произведение a·b.`,a:r,fig:figAngle(m,n,ang),
+   th:E('Скалярное произведение через длины и угол: a·b = |a|·|b|·cos φ. Значения косинуса: cos 60° = 0,5, cos 120° = −0,5 (косинус тупого угла отрицателен).',['Определите косинус заданного угла.','Перемножьте длины векторов.','Умножьте произведение длин на косинус.'],'Берут sin вместо cos или забывают, что для тупого угла результат отрицателен.'),
+   sol:`a·b = |a|·|b|·cos ${ang}° = ${m}·${n}·${ang===60?'0,5':'(−0,5)'} = ${N(r)}.`};}
+]);
+
+/* 3. Стереометрия */
+const BX=[[2,3,6,7],[1,4,8,9],[2,10,11,15],[4,4,7,9],[6,6,7,11],[2,6,9,11],[1,2,2,3]];
+def(3,'Стереометрия','Объёмы и площади, диагонали',[
+ ()=>{const a=ri(2,7);return{q:`Объём куба равен ${a**3}. Найдите площадь его поверхности.`,a:6*a*a,fig:cuboid('a','a','a',''),
+   th:E('У куба все рёбра равны a. Объём V = a³. Поверхность состоит из шести одинаковых квадратных граней, поэтому S = 6a².',['Найдите ребро: a = ∛V (подберите число, куб которого равен объёму).','Подставьте ребро в формулу S = 6a².'],'Считают площадь одной грани или забывают умножить на 6.'),
+   sol:`Ребро куба ∛${a**3} = ${a}. Площадь поверхности 6·${a}² = ${6*a*a}.`};},
+ ()=>{const [p,q,r,d]=pick(BX);const k=d<=9?ri(1,2):1;
+  return{q:`Измерения прямоугольного параллелепипеда равны ${p*k}, ${q*k} и ${r*k}. Найдите длину его диагонали.`,a:d*k,fig:cuboid(String(p*k),String(q*k),String(r*k),'d'),
+   th:E('Квадрат диагонали прямоугольного параллелепипеда равен сумме квадратов трёх его измерений: d² = a² + b² + c². Это теорема Пифагора, применённая дважды: сначала в основании, потом в треугольнике с высотой.',['Возведите каждое измерение в квадрат.','Сложите три числа.','Извлеките корень. Если подобраны хорошие числа, корень целый.'],'Складывают измерения без возведения в квадрат или берут диагональ грани вместо диагонали параллелепипеда.'),
+   sol:`d = √(${(p*k)**2} + ${(q*k)**2} + ${(r*k)**2}) = √${(d*k)**2} = ${d*k}.`};},
+ ()=>{const r=ri(2,9),h=ri(2,9);
+  return{q:`Радиус основания цилиндра равен ${r}, высота равна ${h}. Найдите объём цилиндра, делённый на π.`,a:r*r*h,fig:cylinder('r = '+r,'h = '+h),
+   th:E('Объём цилиндра равен площади основания, умноженной на высоту: V = πr²h. Когда просят «объём, делённый на π», множитель π просто пропадает.',['Возведите радиус в квадрат.','Умножьте на высоту.','π в ответ не входит.'],'Подставляют в формулу диаметр вместо радиуса или оставляют π в ответе.'),
+   sol:`V = πr²h, поэтому V : π = ${r}²·${h} = ${r*r*h}.`};},
+ ()=>{const h=3*ri(1,4),S=ri(2,12);const V=S*h/3;
+  return{q:`Объём конуса равен ${V}, высота равна ${h}. Найдите площадь основания конуса.`,a:S,fig:cone('h = '+h,'S = ?'),
+   th:E('Объём конуса равен трети произведения площади основания на высоту: V = ⅓·S·h. Это уравнение нужно решить относительно S.',['Выразите S: умножьте обе части на 3 и разделите на h, S = 3V : h.','Подставьте числа и вычислите.'],'Забывают про коэффициент ⅓ (получается ответ в три раза меньше нужного).'),
+   sol:`V = ⅓·S·h, откуда S = 3V : h = ${3*V} : ${h} = ${S}.`};},
+ ()=>{const r=3*ri(1,3);
+  return{q:`Радиус шара равен ${r}. Найдите объём шара, делённый на π.`,a:4*r**3/3,fig:sphere('r = '+r),
+   th:E('Объём шара: V = 4/3·π·r³. Когда просят объём, делённый на π, остаётся 4r³ : 3.',['Возведите радиус в куб.','Умножьте на 4 и разделите на 3. Радиус кратен 3, поэтому деление выполняется нацело.'],'Возводят радиус в квадрат (это формула площади сферы 4πr²).'),
+   sol:`V = 4πr³/3, поэтому V : π = 4·${r**3} : 3 = ${4*r**3/3}.`};},
+ ()=>{const a=ri(2,9),h=3*ri(1,4);
+  return{q:`Основание пирамиды — квадрат со стороной ${a}, высота пирамиды равна ${h}. Найдите объём пирамиды.`,a:a*a*h/3,fig:pyramid('a = '+a,'h = '+h),
+   th:E('Объём любой пирамиды равен трети произведения площади основания на высоту: V = ⅓·S·h. Основание — квадрат, значит S = a².',['Найдите площадь основания: a².','Умножьте на высоту и разделите на 3.'],'Забывают делить на 3 или берут боковое ребро вместо высоты.'),
+   sol:`V = ⅓·${a}²·${h} = ${a*a*h/3}.`};},
+ ()=>{const a=ri(2,8);
+  return{q:`Диагональ куба равна ${a}√3. Найдите объём куба.`,a:a**3,fig:cuboid('a','a','a','a√3'),
+   th:E('Диагональ куба с ребром a равна a√3: по формуле d² = a² + a² + a² = 3a². Значит, если диагональ записана как «число·√3», то это число и есть ребро.',['Сравните данную диагональ с a√3 и найдите ребро a.','Возведите ребро в куб.'],'Принимают диагональ за ребро и возводят в куб число вместе с корнем.'),
+   sol:`Диагональ куба с ребром a равна a√3, значит ребро ${a}. V = ${a}³ = ${a**3}.`};}
+]);
+
+/* 4. Простая вероятность */
+def(4,'Простая вероятность','Классическое определение вероятности',[
+ ()=>{const n=pick([20,25,40,50,80,100,200]);const k=ri(3,n-3);
+  return{q:`В классе ${n} учащихся (мальчиков: ${k}, девочек: ${n-k}). Один ученик выбирается случайно. Найдите вероятность того, что это окажется мальчик.`,a:k/n,fig:dots(n,k,'мальчики','девочки'),
+   th:E('Классическое определение: вероятность события равна отношению числа благоприятных исходов m к числу всех равновозможных исходов n, P = m : n. Каждая точка на рисунке — один ученик.',['Определите, сколько всего равновозможных исходов (всего учащихся).','Определите, сколько из них благоприятных: здесь это мальчики.','Разделите m на n и запишите результат десятичной дробью.'],'В числитель ставят не тот набор: вопрос про мальчика, значит благоприятны именно мальчики.'),
+   sol:`Благоприятных исходов ${k}, всего ${n}. P = ${k} : ${n} = ${N(k/n)}.`};},
+ ()=>{if(Math.random()<.5){const w=ri(1,2);const e=3;
+    return{q:`Монету бросают три раза. Найдите вероятность того, что орёл выпадет ровно ${w} ${w===1?'раз':'раза'}.`,a:e/8,fig:outcomes(),
+     th:E('При трёх бросках монеты есть 2·2·2 = 8 равновозможных исходов: ООО, ООР, ОРО и так далее. Нужно выписать исходы с нужным числом орлов и разделить их количество на 8.',['Выпишите все 8 исходов (они на рисунке).','Отметьте те, где орёл выпал ровно столько раз, сколько требуется.','Разделите число отмеченных на 8.'],'Забывают, что ОРО и РОО — разные исходы, и считают благоприятных меньше, чем на самом деле.'),
+     sol:`Всего 2³ = 8 равновозможных исходов, благоприятных ${e}. P = ${e} : 8 = ${N(e/8)}.`};}
+  const m=pick([0,3]);return{q:`Монету бросают три раза. Найдите вероятность того, что орёл выпадет ${m===0?'ни разу':'все три раза'}.`,a:.125,fig:outcomes(),
+   th:E('Всего 8 равновозможных исходов. Исход «все три раза орёл» (или «ни разу») единственный. Можно считать и по-другому: вероятность каждого броска 1/2, а независимые вероятности перемножаются: ½·½·½.',['Определите общее число исходов, 2³ = 8.','Найдите, сколько среди них нужных (один).','Разделите: 1 : 8.'],'Путают «ни разу» с «хотя бы один раз».'),
+   sol:`Всего 8 равновозможных исходов, благоприятный один. P = 1 : 8 = 0,125.`};},
+ ()=>{const n=pick([20,25,40,50,100]);const k=ri(3,Math.floor(n/2));
+  return{q:`На экзамене ${n} билетов, в ${k} из них есть вопрос по теме «Логарифмы». Найдите вероятность того, что школьнику достанется билет с вопросом по логарифмам.`,a:k/n,fig:dots(n,k,'с логарифмами','остальные'),
+   th:E('Все билеты равновозможны, поэтому вероятность вытянуть нужный билет равна доле таких билетов: P = m : n.',['Всего билетов n, нужных m.','Разделите m на n.','Запишите ответ десятичной дробью (проверьте: ответ не больше 1).'],'Делят в другом порядке (n : m). Вероятность не может быть больше 1.'),
+   sol:`P = ${k} : ${n} = ${N(k/n)}.`};},
+ ()=>{const p=ri(1,20)/100;
+  return{q:`Вероятность того, что новая шариковая ручка пишет плохо, равна ${N(p)}. Покупатель выбирает одну ручку. Найдите вероятность того, что она пишет хорошо.`,a:1-p,fig:pbar(p,'пишет плохо','пишет хорошо'),
+   th:E('События «пишет плохо» и «пишет хорошо» противоположны: одно из них обязательно происходит, и они не могут произойти вместе. Сумма их вероятностей равна 1, поэтому P(A̅) = 1 − P(A).',['Определите, что противоположно данному событию.','Вычтите данную вероятность из 1.'],'Ошибки в вычитании десятичных дробей: 1 − 0,07 = 0,93, а не 0,97.'),
+   sol:`События «пишет плохо» и «пишет хорошо» противоположны: 1 − ${N(p)} = ${N(1-p)}.`};},
+ ()=>{const n=pick([20,25,40,50,100]);const k=ri(2,Math.floor(n/2));
+  return{q:`Фабрика выпускает сумки. В среднем из ${n} сумок ${k} имеют скрытые дефекты. Найдите вероятность того, что купленная сумка окажется без дефектов.`,a:(n-k)/n,fig:dots(n,k,'с дефектом','без дефекта'),
+   th:E('Вероятность вычисляется как доля благоприятных исходов: P = m : n. Здесь благоприятны сумки без дефектов, их число равно n − k.',['Найдите число сумок без дефектов: из общего числа вычтите дефектные.','Разделите это число на общее число сумок.'],'Считают долю дефектных сумок, а нужна доля без дефектов.'),
+   sol:`Сумок без дефектов ${n-k} из ${n}. P = ${n-k} : ${n} = ${N((n-k)/n)}.`};}
+]);
+
+/* 5. Сложная вероятность */
+def(5,'Сложная вероятность','Независимые события, полная вероятность',[
+ ()=>{const p=pick([.5,.6,.7,.8,.9]);const t=ri(0,3);
+  const f=twoMachines;
+  const tr=()=>tree('1-й выстрел',[{l:'попал',p:N(p),c:[{l:'попал',p:N(p)},{l:'промах',p:N(1-p)}]},{l:'промах',p:N(1-p),c:[{l:'попал',p:N(p)},{l:'промах',p:N(1-p)}]}]);
+  const th=E('Если события независимы, вероятность того, что они произойдут вместе, равна произведению вероятностей: P(A и B) = P(A)·P(B). Вероятность промаха равна 1 − p. Дерево на рисунке показывает все варианты двух выстрелов; вероятность пути равна произведению чисел на его рёбрах.',['Запишите вероятности попадания и промаха.','Найдите на дереве нужные пути (для «ровно один раз» их два).','Перемножьте вероятности вдоль каждого пути и, если путей несколько, сложите результаты.'],'Для «ровно одного попадания» учитывают только один порядок (попал-промах) и забывают второй (промах-попал).');
+  if(t===0)return{q:`Стрелок попадает в мишень с вероятностью ${N(p)}. Он делает два выстрела. Найдите вероятность того, что он попадёт оба раза.`,a:p*p,fig:tr(),th,sol:`Выстрелы независимы: ${N(p)}·${N(p)} = ${N(p*p)}.`};
+  if(t===1)return{q:`Стрелок попадает в мишень с вероятностью ${N(p)}. Он делает два выстрела. Найдите вероятность того, что он промахнётся оба раза.`,a:(1-p)*(1-p),fig:tr(),th,sol:`Вероятность промаха ${N(1-p)}. Оба раза: ${N(1-p)}·${N(1-p)} = ${N((1-p)*(1-p))}.`};
+  if(t===2)return{q:`Стрелок попадает в мишень с вероятностью ${N(p)}. Он делает два выстрела. Найдите вероятность того, что он попадёт ровно один раз.`,a:2*p*(1-p),fig:tr(),th,sol:`Два способа: попал-промах и промах-попал. 2·${N(p)}·${N(1-p)} = ${N(2*p*(1-p))}.`};
+  return{q:`Стрелок попадает в мишень с вероятностью ${N(p)}. Он делает три выстрела. Найдите вероятность того, что он попадёт все три раза.`,a:p**3,fig:tr(),th:E('Выстрелы независимы, поэтому вероятности перемножаются: P = p·p·p = p³. Рисунок показывает схему для первых двух выстрелов, для третьего ветвление продолжается так же.',['Запишите вероятность одного попадания.','Возведите её в куб.'],'Складывают вероятности вместо того, чтобы перемножать.'),sol:`${N(p)}³ = ${N(p**3)}.`};},
+ ()=>{const p=pick([.1,.2,.3,.4,.5]);const t=ri(0,2);
+  const b=`В магазине стоят два платёжных автомата. Каждый из них неисправен с вероятностью ${N(p)} независимо от другого.`;
+  const fig=twoMachines(p);
+  if(t===0)return{q:b+` Найдите вероятность того, что хотя бы один автомат исправен.`,a:1-p*p,fig,
+   th:E('Событие «хотя бы один» удобно считать через противоположное: P(хотя бы один) = 1 − P(ни одного). Противоположное событие здесь: оба автомата неисправны. Для независимых событий вероятности перемножаются.',['Найдите вероятность того, что оба автомата неисправны: p·p.','Вычтите результат из 1.'],'Считают «хотя бы один исправен» как 1 − p. Это вероятность только для одного автомата.'),
+   sol:`Противоположное событие: оба неисправны, вероятность ${N(p)}² = ${N(p*p)}. Ответ: 1 − ${N(p*p)} = ${N(1-p*p)}.`};
+  if(t===1)return{q:b+` Найдите вероятность того, что оба автомата исправны.`,a:(1-p)*(1-p),fig,
+   th:E('Вероятность исправности одного автомата равна 1 − p. Автоматы работают независимо, поэтому вероятность того, что исправны оба, равна произведению: (1 − p)·(1 − p).',['Найдите вероятность исправности: 1 − p.','Возведите её в квадрат.'],'Путают вероятность неисправности и исправности.'),
+   sol:`${N(1-p)}·${N(1-p)} = ${N((1-p)*(1-p))}.`};
+  return{q:b+` Найдите вероятность того, что оба автомата неисправны.`,a:p*p,fig,
+   th:E('Автоматы независимы, поэтому вероятность того, что неисправны оба, равна произведению вероятностей: p·p.',['Возьмите вероятность неисправности.','Умножьте её саму на себя.'],'Складывают вероятности вместо умножения.'),
+   sol:`${N(p)}·${N(p)} = ${N(p*p)}.`};},
+ ()=>{const f1v=pick([30,40,50,60,70]),f2v=100-f1v;const d1=ri(1,5),d2=ri(1,5);const r=(f1v*d1+f2v*d2)/10000;
+  return{q:`Телефоны выпускают две фабрики. Первая выпускает ${f1v}% всей продукции, вторая — ${f2v}%. Доля брака у первой фабрики ${d1}%, у второй ${d2}%. Найдите вероятность того, что случайно купленный телефон окажется бракованным.`,a:r,
+   fig:tree('телефон',[{l:'фабрика 1',p:N(f1v/100),c:[{l:'брак',p:N(d1/100)},{l:'норма',p:N(1-d1/100)}]},{l:'фабрика 2',p:N(f2v/100),c:[{l:'брак',p:N(d2/100)},{l:'норма',p:N(1-d2/100)}]}]),
+   th:E('Формула полной вероятности: событие (брак) может произойти двумя несовместными способами, через каждую фабрику. P(брак) = P(фабрика 1)·P(брак | фабрика 1) + P(фабрика 2)·P(брак | фабрика 2). На дереве нужны два пути, ведущие в «брак».',['Переведите проценты в доли (30% = 0,3).','Для каждой фабрики перемножьте долю фабрики и долю брака у неё.','Сложите два произведения.'],'Складывают доли брака двух фабрик без учёта того, какую часть продукции выпускает каждая.'),
+   sol:`Формула полной вероятности: ${N(f1v/100)}·${N(d1/100)} + ${N(f2v/100)}·${N(d2/100)} = ${N(r)}.`};},
+ ()=>{const pd=pick([.04,.05,.1]),det=pick([.9,.95,.98]),fa=pick([.01,.02,.05]);const r=pd*det+(1-pd)*fa;
+  return{q:`Вероятность того, что случайная деталь бракованная, равна ${N(pd)}. Автомат контроля бракует настоящий брак с вероятностью ${N(det)}, а исправную деталь ошибочно бракует с вероятностью ${N(fa)}. Найдите вероятность того, что случайная деталь будет забракована автоматом.`,a:r,
+   fig:tree('деталь',[{l:'брак',p:N(pd),c:[{l:'забракована',p:N(det)},{l:'пропущена',p:N(1-det)}]},{l:'исправна',p:N(1-pd),c:[{l:'забракована',p:N(fa)},{l:'пропущена',p:N(1-fa)}]}]),
+   th:E('Деталь либо бракованная, либо исправная: это две несовместные гипотезы. Событие «забракована» происходит при каждой из них со своей вероятностью. Полная вероятность: P = P(брак)·P(забракована | брак) + P(исправна)·P(забракована | исправна).',['Найдите вероятность того, что деталь исправна: 1 − P(брак).','Для каждой гипотезы перемножьте вероятность гипотезы и вероятность браковки при ней.','Сложите два произведения.'],'Забывают второе слагаемое: исправная деталь тоже может быть забракована по ошибке.'),
+   sol:`${N(pd)}·${N(det)} + ${N(1-pd)}·${N(fa)} = ${N(pd*det)} + ${N((1-pd)*fa)} = ${N(r)}.`};}
+]);
+
+/* 6. Уравнения */
+def(6,'Уравнения','Логарифмические, показательные, иррациональные',[
+ ()=>{const [b,c]=pick([[2,3],[2,4],[2,5],[3,2],[3,3],[5,2],[4,2],[4,3],[7,2]]);const a=sgn()*ri(1,9);const x=b**c-a;
+  return{q:`Решите уравнение ${lg(b)}(${xs(a)}) = ${c}.`,a:x,fig:plot({xmin:-a-2,xmax:Math.max(x+3,-a+6),ymin:-2,ymax:c+2,curves:[{f:t=>Math.log(t+a)/Math.log(b)}],hl:[{y:c,label:'y = '+c}]}),
+   th:E('Определение логарифма: log_b(t) = c означает, что t = b^c, причём t > 0. Логарифм нужно «развернуть» в степень. На рисунке корень уравнения — абсцисса точки, где график логарифма пересекает горизонтальную прямую y = '+c+'.',['Запишите, что выражение под логарифмом равно основанию в степени c.','Вычислите степень.','Решите получившееся линейное уравнение.','Проверьте, что выражение под логарифмом положительно.'],'Забывают проверить область определения: под логарифмом должно быть положительное число.'),
+   sol:`${xs(a)} = ${b}<sup>${c}</sup> = ${b**c}, откуда x = ${b**c} ${a<0?'+':'−'} ${Math.abs(a)} = ${x}.`};},
+ ()=>{const [b,c]=pick([[2,3],[2,4],[2,5],[3,2],[3,3],[3,4],[5,2],[5,3],[7,2]]);const a=sgn()*ri(1,8);const Y=b**c;
+  return{q:`Решите уравнение ${b}<sup>${xs(-a)}</sup> = ${b**c}.`,a:c+a,fig:plot({xmin:a-3,xmax:a+c+1.5,ymin:-Y*.1,ymax:Y*1.35,curves:[{f:t=>Math.pow(b,t-a)}],hl:[{y:Y,label:'y = '+Y}]}),
+   th:E('Показательное уравнение решают, приведя обе части к одному основанию: если b^u = b^v (b > 0, b ≠ 1), то u = v. Число в правой части нужно представить как степень основания.',['Представьте число в правой части как степень того же основания.','Приравняйте показатели степеней.','Решите полученное линейное уравнение.'],'Приравнивают показатель к самому числу, не приведя к общему основанию.'),
+   sol:`${b**c} = ${b}<sup>${c}</sup>, значит ${xs(-a)} = ${c}, x = ${c+a}.`};},
+ ()=>{const a=sgn()*ri(1,9),c=ri(2,9);const x=c*c-a;
+  return{q:`Решите уравнение √(${xs(a)}) = ${c}.`,a:x,fig:plot({xmin:-a-1,xmax:x+4,ymin:-1,ymax:c+2.5,curves:[{f:t=>Math.sqrt(t+a)}],hl:[{y:c,label:'y = '+c}]}),
+   th:E('Чтобы избавиться от квадратного корня, обе части возводят в квадрат. Это можно делать, когда правая часть неотрицательна (иначе возможны посторонние корни). После решения корень проверяют подстановкой.',['Возведите обе части уравнения в квадрат.','Решите получившееся линейное уравнение.','Подставьте найденное значение в исходное уравнение и убедитесь, что равенство верно.'],'Забывают возвести в квадрат число справа: √(...) = 5 даёт 25, а не 5.'),
+   sol:`Возводим в квадрат: ${xs(a)} = ${c*c}, x = ${x}.`};},
+ ()=>{const a=ri(5,40),c=ri(2,6);const x=a-c*c;
+  return{q:`Решите уравнение √(${a} − x) = ${c}.`,a:x,fig:plot({xmin:x-4,xmax:a+1,ymin:-1,ymax:c+2.5,curves:[{f:t=>Math.sqrt(a-t)}],hl:[{y:c,label:'y = '+c}]}),
+   th:E('Возведите обе части в квадрат, чтобы убрать корень: из √(u) = c (c ≥ 0) следует u = c². Затем решите линейное уравнение относительно x и проверьте результат.',['Возведите обе части в квадрат.','Выразите x: переносите числа так, чтобы коэффициент при x стал положительным.','Сделайте проверку подстановкой.'],'Ошибка знака при переносе: из '+a+' − x = '+c*c+' следует x = '+a+' − '+c*c+', а не наоборот.'),
+   sol:`Возводим в квадрат: ${a} − x = ${c*c}, x = ${x}.`};},
+ ()=>{let p=ri(-9,9),q=ri(-9,9);while(p===q)q=ri(-9,9);const big=Math.random()<.5;const ans=big?Math.max(p,q):Math.min(p,q);
+  return{q:`Решите уравнение ${poly([[1,'x²'],[-(p+q),'x'],[p*q,'']])} = 0. Если корней несколько, в ответе запишите ${big?'больший':'меньший'} из них.`,a:ans,fig:plot({xmin:Math.min(p,q)-3,xmax:Math.max(p,q)+3,curves:[{f:t=>(t-p)*(t-q)}],ticks:'x'}),
+   th:E('Теорема Виета: корни x₁ и x₂ уравнения x² + bx + c = 0 удовлетворяют условиям x₁ + x₂ = −b и x₁·x₂ = c. Парабола пересекает ось x в корнях. Если подбор не получается, используйте дискриминант D = b² − 4c и формулу x = (−b ± √D) : 2.',['Выпишите сумму корней (число с противоположным знаком к среднему коэффициенту) и их произведение (свободный член).','Подберите два целых числа с такой суммой и произведением.','Выберите больший или меньший корень, как требует условие.'],'Берут сумму корней с тем же знаком, что и средний коэффициент, а надо с противоположным. Также читают условие невнимательно и записывают не тот корень.'),
+   sol:`По теореме Виета корни равны ${N(p)} и ${N(q)}. Нужен ${big?'больший':'меньший'}: ${N(ans)}.`};},
+ ()=>{const x=ri(-8,8),b=ri(-8,8);if(x+b===0)return T[5].gens[5]();const c=pick([2,3,4,5,-1,-2,-3]);const a=c*(x+b)-x;
+  return{q:`Решите уравнение ${fr(xs(a),xs(b))} = ${N(c)}.`,a:x,fig:plot({xmin:-b-6,xmax:-b+6,ymin:c-7,ymax:c+7,curves:[{f:t=>(t+a)/(t+b)}],hl:[{y:c,label:'y = '+N(c)}],vl:[{x:-b,label:'x = '+N(-b)}],ticks:'xy'}),
+   th:E('Дробь равна числу, когда числитель равен этому числу, умноженному на знаменатель: u/v = c ⇔ u = c·v (при v ≠ 0). На графике пунктирная вертикаль — значение x, при котором знаменатель обращается в нуль и функция не определена.',['Умножьте обе части на знаменатель (он не равен нулю).','Раскройте скобки и соберите слагаемые с x в одной части, числа — в другой.','Найдите x и проверьте, что знаменатель при нём не равен нулю.'],'Раскрывая скобки, умножают на число только первое слагаемое.'),
+   sol:`${xs(a)} = ${N(c)}·(${xs(b)}). Решая линейное уравнение, получаем x = ${N(x)}. Знаменатель при этом не равен нулю.`};}
+]);
+
+/* 7. Преобразования выражений */
+const LS=[[6,4,9,2],[6,2,18,2],[6,12,3,2],[10,4,25,2],[10,2,50,2],[10,20,5,2],[12,4,36,2],[12,16,9,2],[2,4,8,5],[3,27,3,4],[5,25,5,3],[2,16,2,5],[3,9,9,4]];
+const LD=[[3,162,2,4],[2,96,3,5],[5,250,2,3],[6,432,2,3],[10,5000,5,3],[2,160,5,5],[3,54,2,3]];
+const TG=[[3,4],[4,3]];
+def(7,'Преобразования','Логарифмы, степени, корни, тригонометрия',[
+ ()=>{const [b,p,q,k]=pick(LS);
+  return{q:`Найдите значение выражения ${lg(b)} ${p} + ${lg(b)} ${q}.`,a:k,
+   th:E('Сумма логарифмов с одинаковым основанием равна логарифму произведения: log_a x + log_a y = log_a(xy). Затем используется определение: log_a(a^k) = k.',['Объедините два логарифма в один: перемножьте числа под знаком логарифма.','Представьте полученное число как степень основания.','Ответ — показатель степени.'],'Складывают числа под логарифмом вместо умножения.'),
+   sol:`Сумма логарифмов равна логарифму произведения: ${lg(b)}(${p}·${q}) = ${lg(b)} ${p*q} = ${k}.`};},
+ ()=>{const [b,p,q,k]=pick(LD);
+  return{q:`Найдите значение выражения ${lg(b)} ${p} − ${lg(b)} ${q}.`,a:k,
+   th:E('Разность логарифмов с одинаковым основанием равна логарифму частного: log_a x − log_a y = log_a(x : y).',['Объедините логарифмы: разделите первое число на второе.','Представьте частное как степень основания.','Ответ — показатель степени.'],'Вычитают числа под логарифмом вместо деления.'),
+   sol:`Разность логарифмов равна логарифму частного: ${lg(b)}(${p} : ${q}) = ${lg(b)} ${p/q} = ${k}.`};},
+ ()=>{const b=pick([2,3,5]),c=ri(2,3),m=ri(2,9);
+  return{q:`Найдите значение выражения ${b}<sup>${c} + ${lg(b)} ${m}</sup>.`,a:b**c*m,
+   th:E('Свойство степени: a^(u + v) = a^u·a^v. Основное логарифмическое тождество: b^(log_b m) = m.',['Разделите степень с суммой в показателе на произведение двух степеней.','Вторую степень вычислите по основному логарифмическому тождеству.','Вычислите первую степень и перемножьте.'],'Пытаются вычислить логарифм по отдельности, хотя тождество сразу даёт число.'),
+   sol:`${b}<sup>${c}</sup>·${b}<sup>${lg(b)} ${m}</sup> = ${b**c}·${m} = ${b**c*m}.`};},
+ ()=>{const b=pick([2,3,5]),e=ri(1,3),p=ri(2,5),q=ri(2,4);const r=p*q-e;
+  return{q:`Найдите значение выражения ${fr(`(${b}<sup>${p}</sup>)<sup>${q}</sup>`,`${b}<sup>${r}</sup>`)}.`,a:b**e,
+   th:E('Свойства степеней: (a^m)^n = a^(m·n) и a^m : a^n = a^(m − n). Числа не нужно перемножать «в лоб»: достаточно работать с показателями.',['Упростите числитель: перемножьте показатели.','Разделите степени с одинаковым основанием: вычтите показатели.','Вычислите оставшуюся маленькую степень.'],'Складывают показатели при возведении степени в степень (надо умножать).'),
+   sol:`Числитель равен ${b}<sup>${p*q}</sup>. Делим степени: ${b}<sup>${p*q} − ${r}</sup> = ${b}<sup>${e}</sup> = ${b**e}.`};},
+ ()=>{if(Math.random()<.5){const m=ri(8,30),n=ri(2,m-1);
+   return{q:`Найдите значение выражения (√${m} − √${n})(√${m} + √${n}).`,a:m-n,
+    th:E('Формула разности квадратов: (a − b)(a + b) = a² − b². Квадрат корня из неотрицательного числа равен самому числу: (√m)² = m.',['Заметьте, что скобки образуют разность квадратов.','Возведите каждый корень в квадрат: получатся числа под корнями.','Вычтите.'],'Пытаются приближённо считать корни. Формула даёт точный целый ответ.'),
+    sol:`Разность квадратов: ${m} − ${n} = ${m-n}.`};}
+  const bs=pick([2,3,5,7]),s=ri(1,4),t=ri(1,4);
+  return{q:`Найдите значение выражения √${bs*s*s}·√${bs*t*t}.`,a:bs*s*t,
+   th:E('Корень из произведения равен произведению корней: √m·√n = √(mn). Удобно выносить множитель из-под корня: √(b·s²) = s√b.',['Вынесите множитель из-под каждого корня: каждое число имеет вид (число)·(квадрат).','Перемножьте внешние множители, а корни √b·√b = b.','Вычислите результат.'],'Складывают числа под корнями вместо умножения.'),
+   sol:`√${bs*s*s} = ${s}√${bs}, √${bs*t*t} = ${t}√${bs}. Произведение: ${s*t}·${bs} = ${bs*s*t}.`};},
+ ()=>{const [s,c]=pick(TG).map(v=>v/5);const t=ri(0,2);
+  const thq=E('Основное тригонометрическое тождество: sin²α + cos²α = 1. Знак функции определяется четвертью, в которой лежит угол: в I четверти sin и cos положительны; во II sin положителен, cos отрицателен; в III оба отрицательны; в IV cos положителен, sin отрицателен. Тангенс равен sin : cos.',['Найдите модуль недостающей функции из тождества: |cos α| = √(1 − sin²α) или |sin α| = √(1 − cos²α).','По четверти определите знак.','Вычислите требуемое выражение.'],'Забывают определить знак по четверти и записывают положительное значение.');
+  if(t===0){const k=pick([5,10]);return{q:`Найдите ${k}cos α, если sin α = ${N(s)} и α ∈ (0; π/2).`,a:k*c,fig:unitCircle(Math.round(Math.asin(s)*180/Math.PI),'I четверть: cos α > 0'),th:thq,sol:`cos α = √(1 − ${N(s)}²) = ${N(c)} (в первой четверти косинус положителен). Ответ: ${k}·${N(c)} = ${N(k*c)}.`};}
+  if(t===1){const k=pick([5,10]);return{q:`Найдите ${k}cos α, если sin α = ${N(s)} и α ∈ (π/2; π).`,a:-k*c,fig:unitCircle(180-Math.round(Math.asin(s)*180/Math.PI),'II четверть: cos α < 0'),th:thq,sol:`|cos α| = √(1 − ${N(s)}²) = ${N(c)}. Во второй четверти косинус отрицателен: ${k}·(−${N(c)}) = ${N(-k*c)}.`};}
+  const neg=Math.random()<.5;const ang=Math.round(Math.acos(.8)*180/Math.PI);return{q:`Найдите tg α, если cos α = 0,8 и α ∈ ${neg?'(3π/2; 2π)':'(0; π/2)'}.`,a:neg?-.75:.75,fig:unitCircle(neg?-ang:ang,neg?'IV четверть: sin α < 0':'I четверть: sin α > 0'),th:thq,sol:`|sin α| = √(1 − 0,8²) = 0,6, значит |tg α| = 0,6 : 0,8 = 0,75. ${neg?'В четвёртой четверти тангенс отрицателен: −0,75.':'В первой четверти тангенс положителен: 0,75.'}`};},
+ ()=>{const t=ri(0,2);
+  if(t===0){const k=ri(2,9);return{q:`Найдите значение выражения ${k}√3·tg 60°.`,a:3*k,fig:tri30(),
+   th:E('Табличные значения: tg 60° = √3, tg 30° = 1/√3, sin 30° = 1/2, cos 30° = √3/2, sin 60° = √3/2, cos 60° = 1/2, sin 45° = cos 45° = √2/2. Их легко восстановить из треугольников на рисунке: в нём катеты 1 и √3, гипотенуза 2.',['Подставьте табличное значение тангенса.','Перемножьте: √3·√3 = 3.','Умножьте на оставшееся число.'],'Путают значения для 30° и 60°. Тангенс 60° — большое число (√3 ≈ 1,73).'),sol:`tg 60° = √3, поэтому ${k}√3·√3 = ${3*k}.`};}
+  if(t===1){const k=ri(2,9);return{q:`Найдите значение выражения ${k}√2·sin 45°.`,a:k,fig:tri45(),
+   th:E('В равнобедренном прямоугольном треугольнике катеты равны 1, гипотенуза √2, а острые углы по 45°. Поэтому sin 45° = cos 45° = 1/√2 = √2/2.',['Подставьте sin 45° = √2/2.','Перемножьте: √2·√2 = 2, затем разделите на 2.'],'Берут sin 45° = 1/2 (это значение для 30°).'),sol:`sin 45° = √2/2, поэтому ${k}√2·√2/2 = ${k}.`};}
+  const k=2*ri(1,5);return{q:`Найдите значение выражения ${k}√3·cos 30°.`,a:3*k/2,fig:tri30(),
+   th:E('В треугольнике 30°-60°-90° со сторонами 1, √3, 2 косинус 30° равен отношению прилежащего катета √3 к гипотенузе 2: cos 30° = √3/2.',['Подставьте cos 30° = √3/2.','Умножьте: √3·√3 = 3.','Разделите на 2.'],'Путают cos 30° = √3/2 и sin 30° = 1/2.'),sol:`cos 30° = √3/2, поэтому ${k}√3·√3/2 = ${3*k/2}.`};}
+]);
+
+/* 8. Производная */
+def(8,'Производная','Касательная, скорость, первообразная',[
+ ()=>{const x0=ri(1,5),b=ri(-9,9),c=ri(-10,10);const k=2*x0+b,m=c-x0*x0;const f=t=>t*t+b*t+c;
+  return{q:`Прямая y = ${poly([[k,'x'],[m,'']])} является касательной к графику функции y = x² + bx${c?sg(c):''}. Найдите b, если абсцисса точки касания положительна.`,a:b,
+   fig:plot({xmin:x0-4.5,xmax:x0+4.5,curves:[{f},{f:t=>k*t+m,cls:'sm'}],pts:[{x:x0,y:f(x0),label:'точка касания',dx:10,dy:18}],ticks:false}),
+   th:E('Прямая касается параболы, когда у них ровно одна общая точка. Значит, уравнение «график = прямая» имеет один корень, и его дискриминант равен нулю. Другой способ: в точке касания совпадают значения функций и производная равна угловому коэффициенту прямой, f′(x₀) = k.',['Приравняйте x² + bx + c к kx + m и перенесите всё в одну часть.','Дискриминант полученного квадратного уравнения приравняйте к нулю.','Из условия «абсцисса точки касания положительна» выберите нужное значение b.'],'Не используют условие про положительную абсциссу и получают сразу два значения b. Из них подходит только одно.'),
+   sol:`Приравниваем: x² + (b − ${N(k)})x + ${N(c-m)} = 0. Касание означает нулевой дискриминант: (b − ${N(k)})² = ${4*(c-m)}, откуда b − ${N(k)} = ±${2*x0}. Абсцисса точки касания x₀ = (${N(k)} − b) : 2 должна быть положительной, поэтому b = ${N(k)} − ${2*x0} = ${N(b)}.`};},
+ ()=>{const a=ri(1,2),b=ri(-5,5),c=ri(-8,8),d=ri(-5,5),t0=ri(1,4);const v=3*a*t0*t0+2*b*t0+c;const f=t=>a*t**3+b*t*t+c*t+d;
+  return{q:`Материальная точка движется прямолинейно по закону x(t) = ${poly([[a,'t³'],[b,'t²'],[c,'t'],[d,'']])} (x — в метрах, t — в секундах). Найдите скорость точки в момент времени t = ${t0} с. Ответ дайте в м/с.`,a:v,
+   fig:plot({xmin:0,xmax:t0+2,curves:[{f}],vl:[{x:t0,label:'t = '+t0}],pts:[{x:t0,y:f(t0)}],xl:'t',yl:'x'}),
+   th:E('Скорость — это производная координаты по времени: v(t) = x′(t). Правила: (tⁿ)′ = n·tⁿ⁻¹, производная постоянной равна 0, производная суммы — сумма производных. Геометрически скорость — наклон касательной к графику x(t).',['Найдите производную x′(t), дифференцируя слагаемые по отдельности.','Подставьте заданный момент времени в полученную формулу.','Вычислите, следя за знаками.'],'Подставляют время в формулу координаты x(t), а не в производную.'),
+   sol:`v(t) = x′(t) = ${poly([[3*a,'t²'],[2*b,'t'],[c,'']])}. v(${t0}) = ${N(v)}.`};},
+ ()=>{const a=ri(1,3),b=ri(-4,4),c=ri(-6,6),d=ri(-5,5),x0=ri(-2,3);const k=3*a*x0*x0+2*b*x0+c;const f=t=>a*t**3+b*t*t+c*t+d;
+  return{q:`Найдите угловой коэффициент касательной к графику функции f(x) = ${poly([[a,'x³'],[b,'x²'],[c,'x'],[d,'']])} в точке с абсциссой x₀ = ${N(x0)}.`,a:k,
+   fig:plot({xmin:x0-3,xmax:x0+3,curves:[{f}],vl:[{x:x0,label:'x₀ = '+N(x0)}],pts:[{x:x0,y:f(x0)}],ticks:'x'}),
+   th:E('Геометрический смысл производной: значение f′(x₀) равно угловому коэффициенту касательной к графику функции в точке с абсциссой x₀. Производная многочлена: (xⁿ)′ = n·xⁿ⁻¹.',['Найдите f′(x), продифференцировав каждое слагаемое.','Подставьте x₀ в f′(x).','Вычислите значение, внимательно считая степени и знаки.'],'Подставляют x₀ в саму функцию f(x), а не в производную.'),
+   sol:`f′(x) = ${poly([[3*a,'x²'],[2*b,'x'],[c,'']])}. Угловой коэффициент равен f′(${N(x0)}) = ${N(k)}.`};},
+ ()=>{const a1=ri(1,3),b1=ri(-3,3),c=ri(-6,6),d=ri(-9,9),x0=ri(1,3);const F=a1*x0**3+b1*x0**2+c*x0+d;const f=t=>3*a1*t*t+2*b1*t+c;
+  return{q:`Для функции f(x) = ${poly([[3*a1,'x²'],[2*b1,'x'],[c,'']])} найдите первообразную F(x), график которой проходит через точку (0; ${N(d)}). В ответе укажите F(${x0}).`,a:F,
+   fig:plot({xmin:-1.5,xmax:x0+1.5,curves:[{f}],shade:[0,x0,f],ticks:'x',yl:'f(x)'}),
+   th:E('Первообразная F(x) функции f(x) — такая функция, что F′(x) = f(x). Для степени: первообразная xⁿ равна xⁿ⁺¹ : (n + 1). Первообразная определена с точностью до постоянной C, которую находят из условия, что график проходит через заданную точку. Закрашенная площадь на рисунке равна F(x₀) − F(0).',['Найдите первообразную каждого слагаемого и добавьте C.','Подставьте x = 0 и условие F(0) = d, найдите C.','Подставьте нужное значение x в F(x).'],'Забывают добавить постоянную C или находят её, подставляя не ту точку.'),
+   sol:`F(x) = ${poly([[a1,'x³'],[b1,'x²'],[c,'x'],[d,'']])} (постоянная найдена из условия F(0) = ${N(d)}). F(${x0}) = ${N(F)}.`};}
+]);
+
+/* 9. Прикладная задача */
+const BL=[[.2,1.4],[.4,1.2],[.6,1.0],[.2,.6],[.4,.8],[.2,1.0],[.2,1.8],[.4,1.6],[.6,1.4]];
+def(9,'Прикладная задача','Формулы из физики и экономики',[
+ ()=>{const [t1,t2]=pick(BL);const h0=pick([1,1.2,1.5,1.6,2]);const v=Math.round(5*(t1+t2));const H=rnd(h0+5*t1*t2);
+  const tend=(v+Math.sqrt(v*v+20*h0))/10;
+  return{q:`Мяч бросили вертикально вверх. Высота мяча над землёй (в метрах) меняется по закону h(t) = ${N(h0)} + ${v}t − 5t², где t — время в секундах. Сколько секунд мяч будет находиться на высоте не менее ${N(H)} метра?`,a:rnd(t2-t1),
+   fig:plot({xmin:0,xmax:Math.ceil(tend*10)/10,ymin:0,ymax:h0+v*v/20+.8,curves:[{f:t=>h0+v*t-5*t*t}],hl:[{y:H,label:'h = '+N(H)}],xl:'t, с',yl:'h, м'}),
+   th:E('Условие «высота не менее H» означает неравенство h(t) ≥ H. Перенесите всё в одну часть: получится квадратное неравенство. Ветви параболы h(t) направлены вниз (коэффициент при t² равен −5), поэтому h ≥ H между корнями соответствующего уравнения. Время нахождения на этой высоте — разность большего и меньшего корней. На рисунке это отрезок, где кривая лежит выше пунктирной линии.',['Запишите неравенство h(t) ≥ H и приведите его к виду «квадратный трёхчлен ≤ 0».','Разделите на общий множитель, чтобы коэффициенты стали проще.','Найдите корни t₁ и t₂ (по теореме Виета или через дискриминант).','Ответ — t₂ − t₁.'],'Отвечают значением одного из корней, а не разностью корней.'),
+   sol:`Решаем ${N(h0)} + ${v}t − 5t² ≥ ${N(H)}, то есть 5t² − ${v}t + ${N(rnd(H-h0))} ≤ 0. Корни: t = ${N(t1)} и t = ${N(t2)}. Мяч выше ${N(H)} м в течение ${N(t2)} − ${N(t1)} = ${N(rnd(t2-t1))} с.`};},
+ ()=>{const p1=ri(2,6),p2=ri(p1+1,12),m=pick([1,2,5,10]);const k=m*(p1+p2),X=m*p1*p2;
+  return{q:`Зависимость объёма спроса q (единиц в месяц) на продукцию предприятия от цены p (тыс. руб.) задаётся формулой q = ${k} − ${m===1?'':m}p. Выручка равна r(p) = q·p. Найдите наибольшую цену p, при которой месячная выручка составит не менее ${X} тыс. руб. Ответ дайте в тыс. руб.`,a:p2,
+   fig:plot({xmin:0,xmax:k/m,ymin:0,ymax:m*(p1+p2)**2/4+X*.05+1,curves:[{f:t=>t*(k-m*t)}],hl:[{y:X,label:'r = '+X}],xl:'p',yl:'r'}),
+   th:E('Выручка r(p) = p·q(p) — квадратичная функция цены, её график парабола с ветвями вниз. Условие «выручка не менее X» даёт неравенство r(p) ≥ X, которое выполняется между корнями уравнения r(p) = X. Наибольшая подходящая цена — больший корень.',['Подставьте q в формулу выручки и запишите неравенство r(p) ≥ X.','Приведите к виду «квадратный трёхчлен ≤ 0» и разделите на общий множитель.','Найдите корни и запишите промежуток.','Выберите наибольшее значение p из промежутка.'],'Решают неравенство с неправильным знаком и получают промежутки вне корней.'),
+   sol:`p(${k} − ${m===1?'':m}p) ≥ ${X}, то есть ${poly([[m,'p²'],[-k,'p'],[X,'']])} ≤ 0. Корни ${p1} и ${p2}, значит p ∈ [${p1}; ${p2}]. Наибольшая цена ${p2}.`};},
+ ()=>{const I=ri(2,9),R=ri(2,12);const P=I*I*R;
+  return{q:`Мощность постоянного тока вычисляется по формуле P = I²R. При силе тока I = ${I} А мощность равна ${P} Вт. Найдите сопротивление R в омах.`,a:R,
+   th:E('В прикладной задаче дана формула, в которую нужно подставить известные величины и выразить неизвестную. Здесь P = I²·R, значит R = P : I².',['Выпишите формулу и известные значения.','Выразите нужную величину (разделите обе части на I²).','Подставьте числа. Следите за тем, что I возводится в квадрат.'],'Делят на I, а не на I².'),
+   sol:`R = P : I² = ${P} : ${I*I} = ${R}.`};},
+ ()=>{const w=ri(2,9),R=ri(2,9);const A=w*w*R;
+  return{q:`Центростремительное ускорение при движении по окружности вычисляется по формуле a = ω²R. Найдите радиус R (в метрах), если угловая скорость ω = ${w} с⁻¹, а ускорение a = ${A} м/с².`,a:R,
+   th:E('Подставьте известные значения в формулу a = ω²R и выразите R: R = a : ω².',['Возведите угловую скорость в квадрат.','Разделите ускорение на полученное число.'],'Не возводят угловую скорость в квадрат.'),
+   sol:`R = a : ω² = ${A} : ${w*w} = ${R}.`};},
+ ()=>{const j=ri(-3,8);const C=5*j,F=9*j+32;
+  return{q:`Температура по шкале Фаренгейта связана с температурой по шкале Цельсия формулой t<sub>F</sub> = 1,8·t<sub>C</sub> + 32. Сколько градусов по шкале Цельсия соответствует ${N(F)} градусам по шкале Фаренгейта?`,a:C,
+   th:E('Это линейная формула. Чтобы выразить t_C, нужно «раздеть» уравнение: сначала вычесть 32, затем разделить на 1,8.',['Подставьте температуру по Фаренгейту в формулу.','Вычтите 32 из обеих частей.','Разделите результат на 1,8 (удобно умножить числитель и знаменатель на 10 или на 5 и разделить на 9).'],'Делят на 1,8, не вычтя сначала 32 (порядок действий важен).'),
+   sol:`t<sub>C</sub> = (${N(F)} − 32) : 1,8 = ${N(F-32)} : 1,8 = ${N(C)}.`};}
+]);
+
+/* 10. Текстовая задача */
+const PP=[[15,10,6],[30,20,12],[12,6,4],[24,8,6],[36,12,9],[45,30,18],[20,5,4],[60,40,24]];
+const AV=[[40,60,48],[30,60,40],[60,90,72],[20,30,24],[50,75,60],[24,40,30]];
+def(10,'Текстовая задача','Движение, работа, проценты',[
+ ()=>{const c=pick([2,3,4,5]);const v=c+ri(2,12);const t1=ri(1,4),t2=ri(1,4);const d1=(v-c)*t1,d2=(v+c)*t2,Tt=t1+t2;
+  return{q:`Моторная лодка прошла против течения реки ${d1} км и по течению ${d2} км, затратив на весь путь ${Tt} ч. Скорость течения реки равна ${c} км/ч. Найдите собственную скорость лодки (в км/ч).`,a:v,fig:figBoat(d1,d2,c),
+   th:E('Время = расстояние : скорость. Против течения скорость лодки равна v − c, по течению v + c, где v — собственная скорость, c — скорость течения. Общее время — сумма времён на двух участках.',['Обозначьте собственную скорость за v (v > c).','Запишите время на каждом участке и составьте уравнение: сумма времён равна общему времени.','Решите уравнение. Часто быстрее подобрать v среди чисел, больших скорости течения, и проверить подстановкой.','Проверьте, что полученная скорость больше скорости течения.'],'Вместо времени подставляют расстояние или путают, на каком участке скорость v − c, а на каком v + c.'),
+   sol:`Пусть собственная скорость v. Против течения лодка идёт со скоростью v − ${c}, по течению v + ${c}. Уравнение: ${d1}/(v − ${c}) + ${d2}/(v + ${c}) = ${Tt}. Его решение v = ${v}: ${d1}/${v-c} + ${d2}/${v+c} = ${t1} + ${t2} = ${Tt}.`};},
+ ()=>{const [a,b,r]=pick(PP);
+  return{q:`Первая труба наполняет бассейн за ${a} мин, а вторая — за ${b} мин. За сколько минут они наполнят бассейн, работая вместе?`,a:r,fig:figPipes(a,b),
+   th:E('В задачах на работу весь объём принимают за 1. Если труба наполняет бассейн за t минут, то её производительность равна 1/t бассейна в минуту. Производительности при совместной работе складываются, а время равно 1 : (общая производительность).',['Запишите производительность каждой трубы: 1/a и 1/b.','Сложите производительности (приведите дроби к общему знаменателю).','Разделите 1 на сумму, чтобы получить время.'],'Складывают времена (a + b) или берут среднее. Складывать нужно именно производительности.'),
+   sol:`За минуту первая наполняет 1/${a} бассейна, вторая 1/${b}. Вместе 1/${a} + 1/${b} = 1/${r}. Значит, нужно ${r} мин.`};},
+ ()=>{let v1,v2,t,D;do{v1=5*ri(8,16);v2=5*ri(8,16);t=pick([2,2.5,3,4,5]);D=(v1+v2)*t;}while(!Number.isInteger(D));
+  return{q:`Расстояние между городами A и B равно ${D} км. Из A в B выехал автомобиль со скоростью ${v1} км/ч. Одновременно ему навстречу из B выехал второй автомобиль со скоростью ${v2} км/ч. Через сколько часов автомобили встретятся?`,a:t,fig:figMeet(D,v1,v2),
+   th:E('При движении навстречу друг другу расстояние между телами сокращается со скоростью, равной сумме скоростей (скорость сближения). Время встречи равно расстоянию, делённому на скорость сближения: t = S : (v₁ + v₂).',['Сложите скорости автомобилей.','Разделите расстояние на сумму скоростей.'],'Делят расстояние на одну скорость или на разность скоростей (это формула для погони).'),
+   sol:`Скорость сближения ${v1} + ${v2} = ${v1+v2} км/ч. Время: ${D} : ${v1+v2} = ${N(t)} ч.`};},
+ ()=>{let price,p1,p2,r;do{price=50*ri(10,40);p1=pick([10,20,25,30,40,50]);p2=pick([10,20,25,50]);r=price*(100+p1)*(100-p2)/10000;}while(Math.abs(r*100-Math.round(r*100))>1e-7);
+  return{q:`Цена товара ${price} руб. Сначала её повысили на ${p1}%, а затем новую цену снизили на ${p2}%. Сколько рублей стоит товар после двух изменений?`,a:r,fig:figPercent(p1,p2),
+   th:E('Увеличение на p% означает умножение на (1 + p/100), уменьшение на p% — умножение на (1 − p/100). Второй процент считается от новой цены, а не от первоначальной, поэтому проценты нельзя просто вычесть друг из друга.',['Найдите цену после повышения: умножьте на (1 + p₁/100).','Найдите цену после снижения: умножьте результат на (1 − p₂/100).'],'Считают, что повышение на 20% и снижение на 20% возвращают исходную цену. Это неверно: основа для расчёта меняется.'),
+   sol:`После повышения: ${price}·${N(1+p1/100)} = ${N(price*(1+p1/100))}. После снижения: ${N(price*(1+p1/100))}·${N(1-p2/100)} = ${N(r)}.`};},
+ ()=>{const [v1,v2,r]=pick(AV);
+  return{q:`Первую половину пути автомобиль проехал со скоростью ${v1} км/ч, а вторую половину — со скоростью ${v2} км/ч. Найдите среднюю скорость автомобиля на всём пути (в км/ч).`,a:r,fig:figAvg(v1,v2),
+   th:E('Средняя скорость равна всему пройденному пути, делённому на всё затраченное время, а не среднему арифметическому скоростей. Если обе половины пути одинаковы, длину можно взять любой: она сократится.',['Примите длину половины пути за S (или за удобное число, например за НОК скоростей).','Найдите время на каждой половине: S : v₁ и S : v₂.','Разделите весь путь 2S на сумму времён.'],'Берут среднее арифметическое скоростей (v₁ + v₂) : 2. Оно верно, только если одинаковы времена, а не расстояния.'),
+   sol:`Пусть весь путь 2S. Время: S/${v1} + S/${v2}. Средняя скорость 2S : (S/${v1} + S/${v2}) = 2·${v1}·${v2} : (${v1} + ${v2}) = ${r}.`};}
+]);
+
+/* 11. Графики функций */
+const HY={2:[1,2],3:[1,3],4:[1,2,4],6:[1,2,3,6],12:[1,2,3,4,6,12]};
+def(11,'Графики функций','Линейная, квадратичная, обратная, показательная',[
+ ()=>{let k=ri(-5,5);while(k===0)k=ri(-5,5);const b=ri(-9,9);const x1=ri(-4,0),x2=ri(1,4),x3=ri(-6,6);const f=t=>k*t+b;
+  return{q:`График функции f(x) = kx + b проходит через точки (${x1}; ${N(f(x1))}) и (${x2}; ${N(f(x2))}). Найдите f(${N(x3)}).`,a:f(x3),
+   fig:plot({xmin:-7,xmax:7,ymin:Math.min(f(-7),f(7))-3,ymax:Math.max(f(-7),f(7))+3,curves:[{f}],pts:[{x:x1,y:f(x1),label:'('+x1+'; '+N(f(x1))+')',dx:8,dy:-8},{x:x2,y:f(x2),label:'('+x2+'; '+N(f(x2))+')',dx:8,dy:-8}],vl:[{x:x3,label:'x = '+N(x3)}],ticks:false}),
+   th:E('График линейной функции — прямая, она однозначно определяется двумя точками. Угловой коэффициент k = (y₂ − y₁) : (x₂ − x₁). Затем b находят подстановкой одной из точек в уравнение y = kx + b.',['Найдите k по двум точкам.','Подставьте координаты одной точки и найдите b.','Подставьте нужное значение x в f(x) = kx + b.'],'Ошибки в знаках при вычитании отрицательных координат. Проверьте результат подстановкой второй точки.'),
+   sol:`Угловой коэффициент k = (${N(f(x2))} − (${N(f(x1))})) : (${x2} − (${x1})) = ${N(k)}, b = ${N(b)}. f(${N(x3)}) = ${N(f(x3))}.`};},
+ ()=>{const m=ri(-5,5),n=ri(-9,9),x0=ri(-5,5);const r=(x0-m)**2+n;const f=t=>(t-m)**2+n;
+  return{q:`График функции f(x) = x² + bx + c имеет вершину в точке (${N(m)}; ${N(n)}). Найдите f(${N(x0)}).`,a:r,
+   fig:plot({xmin:Math.min(m,x0)-3,xmax:Math.max(m,x0)+3,curves:[{f}],pts:[{x:m,y:n,label:'вершина ('+N(m)+'; '+N(n)+')',dx:10,dy:18}],vl:[{x:x0,label:'x = '+N(x0)}],ticks:false}),
+   th:E('Квадратичную функцию с вершиной (m; n) и старшим коэффициентом 1 можно записать как f(x) = (x − m)² + n. Это «вершинная» форма: m сдвигает параболу по x, n — по y. Тогда значение в любой точке получается подстановкой.',['Запишите f(x) = (x − m)² + n, подставив координаты вершины.','Подставьте нужное x.','Вычислите, аккуратно обращаясь со знаками.'],'Забывают, что в скобке стоит x − m: если вершина имеет абсциссу −3, то скобка (x + 3).'),
+   sol:`Ветви параболы направлены вверх, коэффициент при x² равен 1, поэтому f(x) = (x − (${N(m)}))² + ${N(n)}. f(${N(x0)}) = ${N((x0-m)**2)} + ${N(n)} = ${N(r)}.`};},
+ ()=>{const a=pick([2,3,4,6,12]);const ds=HY[a];const b=ri(-6,6);const x1=pick(ds)*sgn();let x2=pick(ds)*sgn();while(x2===x1)x2=pick(ds)*sgn();const x3=pick(ds)*sgn();
+  const f=x=>a/x+b;
+  return{q:`График функции f(x) = ${fr('a','x')} + b проходит через точки (${N(x1)}; ${N(f(x1))}) и (${N(x2)}; ${N(f(x2))}). Найдите f(${N(x3)}).`,a:f(x3),
+   fig:plot({xmin:-7,xmax:7,ymin:b-9,ymax:b+9,curves:[{f}],pts:[{x:x1,y:f(x1),label:'('+N(x1)+'; '+N(f(x1))+')',dx:x1>0?8:-8,dy:-8},{x:x2,y:f(x2),label:'('+N(x2)+'; '+N(f(x2))+')',dx:x2>0?8:-8,dy:-8}],vl:[{x:x3,label:'x = '+N(x3)}],ticks:false}),
+   th:E('Для функции f(x) = a/x + b две точки дают систему из двух уравнений с неизвестными a и b. Проще всего вычесть одно уравнение из другого: b сократится, и останется уравнение для a. График — гипербола, сдвинутая по вертикали на b.',['Запишите два уравнения: a/x₁ + b = y₁ и a/x₂ + b = y₂.','Вычтите их, найдите a.','Подставьте a в одно из уравнений и найдите b.','Подставьте нужное x в f(x).'],'Ошибки при вычитании дробей с отрицательными знаменателями. Сверьтесь подстановкой второй точки.'),
+   sol:`Вычитаем равенства: ${N(f(x1))} − (${N(f(x2))}) = a(1/${N(x1)} − 1/(${N(x2)})), откуда a = ${a}, затем b = ${N(b)}. f(${N(x3)}) = ${N(f(x3))}.`};},
+ ()=>{const bb=pick([2,3]);const a=ri(1,4);const x1=ri(0,2),x2=ri(x1+1,3),x3=ri(1,4);const f=x=>a*bb**x;
+  return{q:`График функции f(x) = a·b<sup>x</sup> (a > 0, b > 0) проходит через точки (${x1}; ${f(x1)}) и (${x2}; ${f(x2)}). Найдите f(${x3}).`,a:f(x3),
+   fig:plot({xmin:-1,xmax:Math.max(x2,x3)+1,ymin:-f(Math.max(x2,x3))*.08,ymax:f(Math.max(x2,x3)+1)*1.05,curves:[{f:t=>a*Math.pow(bb,t)}],pts:[{x:x1,y:f(x1),label:'('+x1+'; '+f(x1)+')',dx:-8,dy:-10},{x:x2,y:f(x2),label:'('+x2+'; '+f(x2)+')',dx:-8,dy:-10}],vl:[{x:x3,label:'x = '+x3}],ticks:false}),
+   th:E('У показательной функции f(x) = a·b^x значения в точках x₁ и x₂ связаны так: f(x₂) : f(x₁) = b^(x₂ − x₁). Разделив одно равенство на другое, получают b, затем находят a.',['Разделите f(x₂) на f(x₁): получится степень b.','Найдите b (извлеките корень подходящей степени).','Из одной точки найдите a.','Подставьте нужное x.'],'Вычитают равенства вместо деления: для показательной функции работает деление.'),
+   sol:`Делим равенства: b<sup>${x2-x1}</sup> = ${f(x2)} : ${f(x1)} = ${bb**(x2-x1)}, значит b = ${bb}, a = ${a}. f(${x3}) = ${a}·${bb}<sup>${x3}</sup> = ${f(x3)}.`};}
+]);
+
+/* 12. Наибольшее и наименьшее значение */
+const algo=['Найдите производную функции.','Приравняйте производную к нулю и найдите критические точки.','Отберите те точки, которые лежат внутри заданного отрезка.','Вычислите значение функции в этих точках и на концах отрезка.','Из полученных чисел выберите наименьшее или наибольшее, как требует условие.'];
+const algoErr='Забывают проверить концы отрезка или берут критическую точку, которая лежит вне отрезка.';
+def(12,'Наибольшее и наименьшее','Экстремумы на отрезке',[
+ ()=>{const k=ri(1,4),c=ri(-10,10);const mn=Math.random()<.5;
+  const f=mn?t=>t**3-3*k*k*t+c:t=>-(t**3)+3*k*k*t+c;
+  const th=E('Наибольшее и наименьшее значения непрерывной функции на отрезке достигаются либо в критических точках внутри отрезка (где производная равна нулю), либо на концах отрезка. Закрашенная полоса на рисунке — заданный отрезок.',algo,algoErr);
+  const fig=plot({xmin:-1,xmax:2*k+1,curves:[{f}],band:[0,2*k],ticks:'x'});
+  if(mn)return{q:`Найдите наименьшее значение функции y = ${poly([[1,'x³'],[-3*k*k,'x'],[c,'']])} на отрезке [0; ${2*k}].`,a:c-2*k**3,fig,th,sol:`y′ = 3x² − ${3*k*k} = 0 при x = ${k} (на отрезке). Сравниваем: y(0) = ${N(c)}, y(${k}) = ${N(c-2*k**3)}, y(${2*k}) = ${N(c+2*k**3)}. Наименьшее ${N(c-2*k**3)}.`};
+  return{q:`Найдите наибольшее значение функции y = ${poly([[-1,'x³'],[3*k*k,'x'],[c,'']])} на отрезке [0; ${2*k}].`,a:c+2*k**3,fig,th,sol:`y′ = −3x² + ${3*k*k} = 0 при x = ${k} (на отрезке). Сравниваем: y(0) = ${N(c)}, y(${k}) = ${N(c+2*k**3)}, y(${2*k}) = ${N(c-2*k**3)}. Наибольшее ${N(c+2*k**3)}.`};},
+ ()=>{const k=ri(2,8);const f=t=>t+k*k/t;
+  return{q:`Найдите наименьшее значение функции y = x + ${fr(k*k,'x')} на отрезке [1; ${3*k}].`,a:2*k,fig:plot({xmin:.4,xmax:3*k+1,curves:[{f}],band:[1,3*k],ticks:'x'}),
+   th:E('Производная суммы — сумма производных, (k/x)′ = −k/x². Знак производной показывает, где функция убывает или возрастает: если слева от критической точки производная отрицательна, а справа положительна, то это точка минимума.',['Найдите y′ = 1 − (число)/x².','Решите y′ = 0 на данном отрезке (x > 0).','Определите знаки производной слева и справа от критической точки.','Вычислите значение в точке минимума и сравните с концами, если нужно.'],'Берут отрицательный корень x = −k, который не лежит на отрезке.'),
+   sol:`y′ = 1 − ${k*k}/x² = 0 при x = ${k}. Слева от ${k} производная отрицательна, справа положительна, значит ${k} — точка минимума. y(${k}) = ${k} + ${k} = ${2*k}.`};},
+ ()=>{const p=sgn()*ri(1,6),q=ri(-10,20);const mn=Math.random()<.5;
+  const th=E('График квадратичной функции — парабола. Если старший коэффициент положителен, у неё есть наименьшее значение в вершине, если отрицателен — наибольшее. Выделив полный квадрат, получаем y = ±(x − m)² + n: наименьшее (наибольшее) значение равно n, а вершина имеет абсциссу m.',['Выделите полный квадрат: x² − 2px = (x − p)² − p².','Определите знак квадратной скобки: при +(x − p)² есть минимум, при −(x − p)² есть максимум.','Постоянное слагаемое n и есть искомое значение.'],'Берут значение функции при x = p, а не значение n. Это одно и то же число, но нужно проверить вычисление.');
+  if(mn)return{q:`Найдите наименьшее значение функции y = ${poly([[1,'x²'],[-2*p,'x'],[q,'']])}.`,a:q-p*p,fig:plot({xmin:p-4,xmax:p+4,curves:[{f:t=>t*t-2*p*t+q}],ticks:'x'}),th,sol:`Выделяем полный квадрат: y = (x − ${N(p)})² + ${N(q-p*p)}. Наименьшее значение ${N(q-p*p)}.`};
+  return{q:`Найдите наибольшее значение функции y = ${poly([[-1,'x²'],[2*p,'x'],[q,'']])}.`,a:q+p*p,fig:plot({xmin:p-4,xmax:p+4,curves:[{f:t=>-t*t+2*p*t+q}],ticks:'x'}),th,sol:`Выделяем полный квадрат: y = −(x − ${N(p)})² + ${N(q+p*p)}. Наибольшее значение ${N(q+p*p)}.`};},
+ ()=>{const a=ri(-5,8),k=pick([1,2,3,5]);const f=t=>k*(t-a)*Math.exp(t-a+1);
+  return{q:`Найдите наименьшее значение функции y = ${k===1?'':k}(${xs(-a)})e<sup>${xs(1-a)}</sup> на отрезке [${N(a-3)}; ${N(a)}].`,a:-k,fig:plot({xmin:a-4,xmax:a+1,curves:[{f}],band:[a-3,a],ticks:'x'}),
+   th:E('Производная произведения: (u·v)′ = u′·v + u·v′. Производная показательной функции e^(g(x)) равна e^(g(x))·g′(x). Множитель e^(...) всегда положителен, поэтому знак производной определяется оставшейся скобкой.',['Найдите производную по правилу произведения и вынесите e^(...) за скобку.','Приравняйте оставшийся множитель к нулю и найдите критическую точку.','Определите знак производной слева и справа: смена с «−» на «+» означает минимум.','Вычислите значение в точке минимума: e⁰ = 1.'],'Пытаются приравнять к нулю и показательный множитель. Он никогда не равен нулю.'),
+   sol:`y′ = ${k===1?'':k+'·'}e<sup>${xs(1-a)}</sup>·(${xs(1-a)}) = 0 при x = ${N(a-1)}. Знак производной меняется с «−» на «+», это минимум. y(${N(a-1)}) = ${k===1?'':k+'·'}(−1)·e⁰ = ${-k}.`};},
+ ()=>{const a=ri(2,9),b=ri(-8,8);const bs=b===0?'':(b<0?' − '+N(-b):' + '+N(b));const f=t=>a*Math.cos(t)+b;
+  const th=E('Значения косинуса всегда лежат между −1 и 1: −1 ≤ cos x ≤ 1, причём оба значения достигаются. Поэтому наибольшее значение выражения a·cos x + b при a > 0 получается при cos x = 1, а наименьшее при cos x = −1.',['Определите знак множителя перед косинусом.','Подставьте в выражение cos x = 1 (для наибольшего) или cos x = −1 (для наименьшего).','Вычислите результат.'],'Подставляют не то крайнее значение косинуса. При отрицательном множителе перед косинусом ответы меняются местами.');
+  if(Math.random()<.5)return{q:`Найдите наибольшее значение функции y = ${a}cos x${bs}.`,a:a+b,fig:plot({xmin:-7,xmax:7,curves:[{f}],ticks:'x'}),th,sol:`Наибольшее значение cos x равно 1, поэтому y<sub>max</sub> = ${a}·1${bs} = ${N(a+b)}.`};
+  return{q:`Найдите наименьшее значение функции y = ${a}cos x${bs}.`,a:-a+b,fig:plot({xmin:-7,xmax:7,curves:[{f}],ticks:'x'}),th,sol:`Наименьшее значение cos x равно −1, поэтому y<sub>min</sub> = −${a}${bs} = ${N(-a+b)}.`};}
+]);
+
+/* ===================== ЧАСТЬ 2 (задания 13–19) ===================== */
+const gcd=(a,b)=>b?gcd(b,a%b):Math.abs(a);
+const piStr=k=>{if(k===0)return'0';const g=gcd(k,12);let n=k/g;const d=12/g;const m=n<0?'−':'';n=Math.abs(n);return m+(n===1?'π':n+'π')+(d===1?'':'/'+d);};
+const fracS=(n,d)=>{const g=gcd(n,d)||1;n/=g;d/=g;if(d<0){n=-n;d=-d;}return d===1?N(n):(n<0?'−':'')+Math.abs(n)+'/'+d;};
+const rootsIn=(cls,A,B)=>{const r=new Set();cls.forEach(([b,s])=>{for(let n=-12;n<=12;n++){const v=b+s*n;if(v>=A&&v<=B)r.add(v);}});return[...r].sort((x,y)=>x-y);};
+const ivStr=list=>list.map(r=>{
+  if(r.a===r.b&&r.la&&r.lb)return'{'+N(r.a)+'}';
+  const l=r.a===-Infinity?'(−∞':(r.la?'[':'(')+N(r.a);
+  const rr=r.b===Infinity?'+∞)':N(r.b)+(r.lb?']':')');
+  return l+'; '+rr;}).join(' ∪ ')||'∅';
+const plK=n=>{const a=n%100,b=n%10;return a>=11&&a<=14?'корней':b===1?'корень':b>=2&&b<=4?'корня':'корней';};
+const fx=a=>xs(-a);
+const pf=a=>a===0?'x':'('+fx(a)+')';
+const isect=(p1,p2,p3,p4)=>{const d=(p1[0]-p2[0])*(p3[1]-p4[1])-(p1[1]-p2[1])*(p3[0]-p4[0]);
+  const t=((p1[0]-p3[0])*(p3[1]-p4[1])-(p1[1]-p3[1])*(p3[0]-p4[0]))/d;return[p1[0]+t*(p2[0]-p1[0]),p1[1]+t*(p2[1]-p1[1])];};
+
+/* числовая прямая: o.min,o.max,o.ticks[{v,l}],o.shade[{a,b,la,lb}],o.dots[{v,l}] */
+function nline(o){
+  const W=400,H=118,ml=26,mr=26,y=68;const X=v=>ml+(v-o.min)/(o.max-o.min)*(W-ml-mr);
+  let s=AR(ml-14,y,W-mr+14,y,'sk');
+  (o.shade||[]).forEach(r=>{const a=Math.max(r.a,o.min),b=Math.min(r.b,o.max);s+=RC(X(a),y-10,Math.max(1,X(b)-X(a)),20,'fac');});
+  (o.ticks||[]).forEach(t=>{s+=L(X(t.v),y-5,X(t.v),y+5,'sk')+TX(X(t.v),y+24,t.l,'middle','tm');});
+  (o.shade||[]).forEach(r=>{
+    if(isFinite(r.a)&&r.a>=o.min)s+=CI(X(r.a),y,5,r.la?'fa':'sk fsft');
+    if(isFinite(r.b)&&r.b<=o.max)s+=CI(X(r.b),y,5,r.lb?'fa':'sk fsft');});
+  (o.dots||[]).forEach((d,i)=>{s+=DTt(X(d.v),y,4.5,'fa')+TX(X(d.v),y-18-(i%2)*14,d.l,'middle','ta');});
+  return SV(W,H,s);
+}
+
+/* ---------- 13: тригонометрия ---------- */
+const crit13='<b>2 балла:</b> обоснованно получены верные ответы в обоих пунктах. <b>1 балл:</b> обоснованно получен верный ответ в пункте а или в пункте б (в том числе серии решений найдены верно, но при отборе корней допущена ошибка). <b>0 баллов:</b> остальные случаи.';
+const th13a=E('Тригонометрическое уравнение сводят к простейшим: sin x = a, cos x = a, tg x = a. Нужные формулы: sin 2x = 2 sin x cos x, cos 2x = 1 − 2 sin²x = 2 cos²x − 1. Решения простейших: cos x = a даёт x = ±arccos a + 2πn, sin x = a даёт x = (−1)<sup>k</sup>·arcsin a + πk, n и k целые. Значения для углов 30°, 45°, 60° нужно знать наизусть. Произведение равно нулю, когда равен нулю хотя бы один множитель.',['Расписать sin 2x по формуле двойного угла и перенести всё в одну часть.','Вынести общий множитель sin x за скобки.','Приравнять к нулю каждый множитель, решить простейшие уравнения и записать серии решений.','Для пункта б) подставлять целые n в каждую серию и оставлять значения из отрезка; отдельно проверить концы отрезка. Удобно отметить найденные точки на числовой прямой, как на рисунке к решению.'],'Делят обе части на sin x. Так теряются корни, при которых sin x = 0. Общий множитель нужно выносить за скобку, а не сокращать.');
+const th13b=E('Если в уравнении есть cos 2x и sin x, заменяют cos 2x = 1 − 2 sin²x и получают квадратное уравнение относительно t = sin x. Корни t нужно проверить: синус по модулю не больше 1, поэтому |t| > 1 не даёт решений. Для sin x = 1/2: x = π/6 + 2πn и x = 5π/6 + 2πn. Для sin x = −1/2: x = 7π/6 + 2πn и x = 11π/6 + 2πn.',['Заменить cos 2x по формуле 1 − 2 sin²x.','Ввести t = sin x и решить квадратное уравнение.','Отбросить корни t, по модулю большие 1.','Решить sin x = t, записать две серии решений.','Отобрать корни на отрезке подстановкой целых n и сверкой с концами отрезка.'],'Оставляют t = 2 или t = −2 и пытаются решать sin x = 2. Такое уравнение корней не имеет.');
+function groupLists(cls,labels,A,B){return cls.map((c,i)=>{const r=rootsIn([c],A,B);return labels[i]+': '+(r.length?r.map(piStr).join('; '):'в отрезок не попадает');}).join('<br>');}
+const gen13a=()=>{
+  const c=pick([['√2',3,9,Math.SQRT2],['√3',2,10,Math.sqrt(3)],['1',4,8,1]]);const s=pick([1,-1]);const th=s>0?c[1]:c[2];
+  const cs=c[0]==='1'?'':c[0]+'·';
+  const eq=s>0?`sin 2x = ${cs}sin x`:`sin 2x + ${cs}sin x = 0`;
+  const A=6*ri(-2,2),B=A+6*ri(3,4);
+  const cls=[[0,12],[th,24],[-th,24]];const roots=rootsIn(cls,A,B);
+  const cosT=(s<0?'−':'')+fr(c[0],2);
+  return{q:`а) Решите уравнение ${eq}.<br>б) Найдите все корни этого уравнения, принадлежащие отрезку [${piStr(A)}; ${piStr(B)}].`,
+   ans:`а) x = πn; x = ±${piStr(th)} + 2πn, где n ∈ ℤ.<br>б) ${roots.map(piStr).join('; ')}.`,
+   sol:`<b>а)</b> Так как sin 2x = 2 sin x cos x, уравнение принимает вид 2 sin x cos x ${s>0?'−':'+'} ${cs}sin x = 0, то есть sin x·(2cos x ${s>0?'−':'+'} ${c[0]}) = 0.<br>Либо sin x = 0, откуда x = πn. Либо cos x = ${cosT}, откуда x = ±${piStr(th)} + 2πn, n ∈ ℤ.<br><b>б)</b> Отрезок [${piStr(A)}; ${piStr(B)}]. Отбираем корни по сериям:<br>${groupLists(cls,['x = πn','x = '+piStr(th)+' + 2πn','x = −'+piStr(th)+' + 2πn'],A,B)}<br>Итого ${roots.length} ${plK(roots.length)}: ${roots.map(piStr).join('; ')}.`,
+   figSol:nline({min:A-3,max:B+3,ticks:[...Array((B-A)/6+1).keys()].map(i=>({v:A+6*i,l:piStr(A+6*i)})),shade:[{a:A,b:B,la:true,lb:true}],dots:roots.map(v=>({v,l:piStr(v)}))}),
+   th:th13a,v:{t:13,f:x=>Math.sin(2*x)-s*c[3]*Math.sin(x),A,B,roots}};
+};
+const gen13b=()=>{
+  const row=pick([[5,-3,1],[-5,-3,-1],[-3,1,1],[3,1,-1]]);const [p,q,sg0]=row;
+  const cls=sg0>0?[[2,24],[10,24]]:[[14,24],[22,24]];
+  const A=6*ri(-2,2),B=A+6*ri(3,4);const roots=rootsIn(cls,A,B);
+  const eq=`cos 2x ${p<0?'−':'+'} ${Math.abs(p)} sin x ${q<0?'−':'+'} ${Math.abs(q)} = 0`;
+  const D=p*p+8*(1+q),sq=Math.sqrt(D);const t1=fracS(p+sq,4),t2=fracS(p-sq,4);
+  const good=sg0>0?'1/2':'−1/2';const bad=fracS(Math.abs(p+sq)>Math.abs(p-sq)?p+sq:p-sq,4);
+  const v1=sg0>0?['π/6','5π/6']:['7π/6','11π/6'];
+  return{q:`а) Решите уравнение ${eq}.<br>б) Найдите все корни этого уравнения, принадлежащие отрезку [${piStr(A)}; ${piStr(B)}].`,
+   ans:`а) x = ${v1[0]} + 2πn; x = ${v1[1]} + 2πn, где n ∈ ℤ.<br>б) ${roots.length?roots.map(piStr).join('; '):'корней нет'}.`,
+   sol:`<b>а)</b> Заменим cos 2x = 1 − 2 sin²x: 1 − 2 sin²x ${p<0?'−':'+'} ${Math.abs(p)} sin x ${q<0?'−':'+'} ${Math.abs(q)} = 0. Пусть t = sin x, тогда 2t² ${-p<0?'−':'+'} ${Math.abs(p)}t ${-(1+q)<0?'−':'+'} ${Math.abs(1+q)} = 0.<br>Дискриминант D = ${p*p} ${8*(1+q)<0?'−':'+'} ${Math.abs(8*(1+q))} = ${D}, корни t = (${N(p)} ± ${sq}) : 4, то есть t = ${t1} и t = ${t2}.<br>Значение t = ${bad} не подходит, так как |sin x| ≤ 1. Остаётся sin x = ${good}, откуда x = ${v1[0]} + 2πn или x = ${v1[1]} + 2πn, n ∈ ℤ.<br><b>б)</b> На отрезке [${piStr(A)}; ${piStr(B)}]:<br>${groupLists(cls,['x = '+v1[0]+' + 2πn','x = '+v1[1]+' + 2πn'],A,B)}<br>Ответ: ${roots.length?roots.map(piStr).join('; '):'корней нет'}.`,
+   figSol:nline({min:A-3,max:B+3,ticks:[...Array((B-A)/6+1).keys()].map(i=>({v:A+6*i,l:piStr(A+6*i)})),shade:[{a:A,b:B,la:true,lb:true}],dots:roots.map(v=>({v,l:piStr(v)}))}),
+   th:th13b,v:{t:13,f:x=>Math.cos(2*x)+p*Math.sin(x)+q,A,B,roots}};
+};
+def(13,'Уравнения','Тригонометрическое уравнение и отбор корней',[gen13a,gen13b]);
+
+/* ---------- 14: стереометрия ---------- */
+const VP={A:[40,190],B:[190,190],C:[260,140],D:[110,140],A1:[40,80],B1:[190,80],C1:[260,30],D1:[110,30]};
+function cubeFig(o){
+  o=o||{};const P=VP;let s=PG([P.A,P.B,P.B1,P.A1],'sk fsft')+PG([P.B,P.C,P.C1,P.B1],'sk fsft')+PG([P.A1,P.B1,P.C1,P.D1],'sk fsft');
+  s+=L(...P.A,...P.D,'sm sd')+L(...P.D,...P.C,'sm sd')+L(...P.D,...P.D1,'sm sd');
+  if(o.tri)s+=PG(o.tri.map(k=>P[k]),'fac')+PH('M'+o.tri.map(k=>f1(P[k][0])+' '+f1(P[k][1])).join('L')+'Z','sa');
+  (o.acc||[]).forEach(e=>{s+=L(...P[e[0]],...P[e[1]],'sa sd');});
+  const lab={A:[-9,15,'end'],B:[0,19,'middle'],C:[11,14,'start'],D:[-4,17,'end'],A1:[-9,-4,'end'],B1:[-7,17,'middle'],C1:[10,-2,'start'],D1:[0,-9,'middle']};
+  Object.keys(lab).forEach(k=>{const [dx,dy,an]=lab[k];s+=DTt(P[k][0],P[k][1],2.6,'fk')+TX(P[k][0]+dx,P[k][1]+dy,k.replace('1','₁'),an);});
+  (o.dim||[]).forEach(d=>{s+=TX(d[0],d[1],d[2],d[3]||'middle','ta');});
+  return SV(310,230,s);
+}
+function pyrFig(){
+  const A=[40,175],B=[185,175],C=[245,140],D=[100,140],O=[142.5,157.5],S=[142.5,28],M=[112.5,175];
+  const t=((O[0]-S[0])*(M[0]-S[0])+(O[1]-S[1])*(M[1]-S[1]))/((M[0]-S[0])**2+(M[1]-S[1])**2);const H=[S[0]+t*(M[0]-S[0]),S[1]+t*(M[1]-S[1])];
+  let s=PG([A,B,C,D],'sk fsft')+L(...S,...A)+L(...S,...B)+L(...S,...C)+L(...S,...D,'sm sd')+L(...A,...D,'sm sd')+L(...D,...C,'sm sd');
+  s+=L(...S,...O,'sm sd')+L(...O,...M,'sm sd')+L(...S,...M,'sa')+L(...O,...H,'sa');
+  [['S',S,-10,-4,'end'],['A',A,-9,15,'end'],['B',B,2,17,'start'],['C',C,10,14,'start'],['D',D,-8,-4,'end'],['M',M,0,19,'middle'],['O',O,9,16,'start'],['H',H,-10,-2,'end']].forEach(([n,p,dx,dy,an])=>{s+=DTt(p[0],p[1],2.6,'fk')+TX(p[0]+dx,p[1]+dy,n,an);});
+  return SV(300,215,s);
+}
+const crit14='<b>3 балла:</b> обоснованно получены верные ответы в обоих пунктах. <b>2 балла:</b> верно доказано утверждение пункта а, а в пункте б ход решения верный, но допущена вычислительная ошибка; или обоснованно решён пункт б без доказательства пункта а. <b>1 балл:</b> верно выполнено только доказательство пункта а, или в пункте б получен верный ответ без обоснования. <b>0 баллов:</b> остальные случаи.';
+const th14p=E('Угол между плоскостями измеряют линейным углом: проведите в каждой плоскости перпендикуляр к линии пересечения в одной и той же точке. Расстояние от точки до плоскости — длина перпендикуляра. Чтобы доказать, что прямая перпендикулярна плоскости, достаточно показать, что она перпендикулярна двум пересекающимся прямым этой плоскости. В прямоугольном треугольнике высота, проведённая к гипотенузе, равна произведению катетов, делённому на гипотенузу.',['Сделайте чертёж и отметьте все нужные точки.','Для пункта а): докажите два перпендикуляра к ребру двугранного угла (OM ⟂ AB и SM ⟂ AB).','Для пункта б): в плоскости SOM опустите из точки O перпендикуляр OH на SM и докажите, что он перпендикулярен всей плоскости SAB.','Найдите OH из прямоугольного треугольника SOM.'],'Проводят перпендикуляр, не доказав, что он перпендикулярен всей плоскости, а не только одной прямой. Нужны две пересекающиеся прямые.');
+const th14c=E('Прямая перпендикулярна плоскости, если она перпендикулярна двум пересекающимся прямым этой плоскости. Диагонали квадрата перпендикулярны. Расстояние от вершины A до плоскости A₁BD равно высоте тетраэдра AA₁BD, проведённой из A. Объём этого тетраэдра можно посчитать двумя способами: через основание AA₁B и высоту AD (в тетраэдре три прямых угла при вершине A) и через грань A₁BD и искомую высоту.',['Докажите, что BD ⟂ AC₁: BD ⟂ AC и BD ⟂ AA₁, значит BD ⟂ плоскости AA₁C₁C.','Аналогично A₁D ⟂ AC₁ (через грань AA₁D₁D и D₁C₁). Две пересекающиеся прямые BD и A₁D перпендикулярны AC₁, значит AC₁ ⟂ A₁BD.','Найдите объём тетраэдра AA₁BD и площадь равностороннего треугольника A₁BD со стороной a√2.','Из V = ⅓·S·h найдите расстояние h.'],'Пользуются готовым фактом «диагональ куба перпендикулярна сечению» без доказательства. На экзамене пункт а) требует именно доказательства.');
+const th14d=E('Угол между прямой и плоскостью — угол между этой прямой и её проекцией на плоскость. Если DD₁ перпендикулярна плоскости основания, то проекцией BD₁ на основание служит BD, и угол между диагональю и основанием равен ∠D₁BD. Диагональ прямоугольного параллелепипеда: d² = a² + b² + c².',['Докажите, что BD — проекция BD₁ на плоскость основания (DD₁ ⟂ ABCD).','Найдите диагональ BD₁ по формуле d² = a² + b² + c².','В прямоугольном треугольнике D₁DB синус угла B равен отношению противолежащего катета DD₁ к гипотенузе BD₁.'],'Находят синус через основание BD (получается косинус угла) или путают высоту с другим ребром.');
+const gen14a=()=>{
+  const k=ri(1,3),sw=Math.random()<.5;const p=(sw?4:3)*k,h=(sw?3:4)*k,l=5*k;const ans=p*h/l;
+  return{q:`В правильной четырёхугольной пирамиде SABCD сторона основания AB равна ${2*p}, а высота SO равна ${h}. Точка M — середина ребра AB.<br>а) Докажите, что угол SMO — линейный угол двугранного угла между гранью SAB и плоскостью основания.<br>б) Найдите расстояние от точки O до плоскости SAB.`,
+   fig:pyrFig(),
+   ans:`б) ${N(ans)}.`,
+   sol:`<b>а)</b> В основании лежит квадрат, O — его центр, M — середина AB, поэтому OM ∥ AD и OM ⟂ AB. Треугольник SAB равнобедренный (пирамида правильная), SM — его медиана и высота, поэтому SM ⟂ AB. Оба отрезка OM и SM перпендикулярны ребру AB, значит ∠SMO — линейный угол двугранного угла между гранью SAB и основанием.<br><b>б)</b> AB ⟂ OM и AB ⟂ SM, значит AB ⟂ плоскости SOM. Проведём в плоскости SOM перпендикуляр OH к SM. Тогда OH ⟂ AB, и OH ⟂ SM, значит OH ⟂ плоскости SAB, и OH — искомое расстояние.<br>OM = AB : 2 = ${p}. Из прямоугольного треугольника SOM: SM = √(${h}² + ${p}²) = ${l}. Высота к гипотенузе: OH = SO·OM : SM = ${h}·${p} : ${l} = ${N(ans)}.`,
+   th:th14p,v:{t:14,kind:'pyr',a:2*p,h,val:ans}};
+};
+const gen14b=()=>{
+  const a=ri(2,9);const val=a/Math.sqrt(3);const str=a%3===0?(a===3?'√3':`${a/3}√3`):`${a}√3/3`;
+  return{q:`Дан куб ABCDA₁B₁C₁D₁ с ребром ${a}.<br>а) Докажите, что диагональ AC₁ перпендикулярна плоскости A₁BD.<br>б) Найдите расстояние от точки A до плоскости A₁BD.`,
+   fig:cubeFig({tri:['A1','B','D'],acc:[['A','C1']]}),
+   ans:`б) ${str}.`,
+   sol:`<b>а)</b> BD ⟂ AC как диагонали квадрата ABCD, и BD ⟂ AA₁, так как AA₁ ⟂ плоскости основания. Значит, BD ⟂ плоскости AA₁C₁C, поэтому BD ⟂ AC₁.<br>A₁D ⟂ AD₁ как диагонали квадрата AA₁D₁D, и A₁D ⟂ D₁C₁, так как D₁C₁ ⟂ плоскости AA₁D₁D. Значит, A₁D ⟂ плоскости AD₁C₁, а AC₁ лежит в этой плоскости, поэтому A₁D ⟂ AC₁.<br>Прямые BD и A₁D пересекаются и обе перпендикулярны AC₁, значит AC₁ ⟂ плоскости A₁BD.<br><b>б)</b> Рассмотрим тетраэдр AA₁BD. Рёбра AA₁, AB, AD взаимно перпендикулярны и равны ${a}, поэтому V = ⅓·(½·${a}·${a})·${a} = ${N(a**3)}/6. Треугольник A₁BD равносторонний со стороной ${a}√2, его площадь S = (√3/4)·2·${a}² = ${a*a}√3/2.<br>Расстояние h от A до плоскости A₁BD: V = ⅓·S·h, откуда h = 3V : S = (${N(a**3)}/2) : (${a*a}√3/2) = ${a}/√3 = ${str}.`,
+   th:th14c,v:{t:14,val}};
+};
+const gen14c=()=>{
+  const [p,q,r,d]=pick(BX);const dims=[p,q,r];const hh=pick([0,1,2]);const h=dims[hh];const bs=dims.filter((_,i)=>i!==hh);
+  return{q:`В прямоугольном параллелепипеде ABCDA₁B₁C₁D₁ известно, что AB = ${bs[0]}, AD = ${bs[1]}, AA₁ = ${h}.<br>а) Докажите, что угол между диагональю BD₁ и плоскостью основания равен углу D₁BD.<br>б) Найдите синус этого угла.`,
+   fig:cubeFig({acc:[['B','D1'],['B','D']],dim:[[75,205,String(bs[0])],[236,178,String(bs[1]),'start'],[30,135,String(h),'end']]}),
+   ans:`б) ${fracS(h,d)}.`,
+   sol:`<b>а)</b> Ребро DD₁ перпендикулярно плоскости основания ABCD. Поэтому проекцией наклонной BD₁ на эту плоскость служит отрезок BD. Угол между прямой и плоскостью — это угол между прямой и её проекцией, то есть ∠D₁BD.<br><b>б)</b> Диагональ основания: BD = √(${bs[0]}² + ${bs[1]}²) = √${bs[0]**2+bs[1]**2}. Диагональ параллелепипеда: BD₁ = √(${bs[0]}² + ${bs[1]}² + ${h}²) = √${d*d} = ${d}.<br>В прямоугольном треугольнике D₁DB: sin∠D₁BD = DD₁ : BD₁ = ${h} : ${d} = ${fracS(h,d)}.`,
+   th:th14d,v:{t:14,val:h/d}};
+};
+def(14,'Стереометрия','Доказательство и расстояние, угол',[gen14a,gen14b,gen14c]);
+
+/* ---------- 15: неравенства ---------- */
+const crit15='<b>2 балла:</b> обоснованно получен верный ответ. <b>1 балл:</b> обоснованно получен ответ, отличающийся от верного исключением или включением граничных точек (например, потеряна область определения), или ход решения верный, но допущена вычислительная ошибка. <b>0 баллов:</b> остальные случаи.';
+function solveRat(numR,denR,wantNeg,strict){
+  const crit=[...new Set([...numR,...denR])].sort((a,b)=>a-b);
+  const f=x=>{let v=1;numR.forEach(r=>v*=x-r);denR.forEach(r=>v/=x-r);return v;};
+  const items=[];const signs=[];
+  for(let i=0;i<=crit.length;i++){
+    const lo=i?crit[i-1]:-Infinity,hi=i<crit.length?crit[i]:Infinity;
+    const x=lo===-Infinity?hi-1:hi===Infinity?lo+1:(lo+hi)/2;const fv=f(x);
+    items.push({t:'g',lo,hi,ok:wantNeg?fv<0:fv>0});signs.push({lo,hi,pos:fv>0});
+    if(i<crit.length){const isNum=numR.includes(crit[i])&&!denR.includes(crit[i]);items.push({t:'p',v:crit[i],ok:isNum&&!strict});}
+  }
+  const seg=[];let cur=null;
+  items.forEach(it=>{
+    if(!it.ok){if(cur){seg.push(cur);cur=null;}return;}
+    if(it.t==='g'){if(cur){cur.b=it.hi;cur.lb=false;}else cur={a:it.lo,la:false,b:it.hi,lb:false};}
+    else{if(cur){cur.b=it.v;cur.lb=true;}else cur={a:it.v,la:true,b:it.v,lb:true};}
+  });
+  if(cur)seg.push(cur);
+  return{seg,signs,crit};
+}
+const th15r=E('Метод интервалов: 1) перенести всё в одну часть и привести к виду «дробь сравнивается с нулём»; 2) разложить числитель и знаменатель на множители; 3) отметить на числовой прямой нули числителя и нули знаменателя; 4) определить знак выражения на каждом промежутке (знаки чередуются, если корни простые); 5) выбрать промежутки нужного знака. Нули знаменателя никогда не входят в ответ. Нули числителя входят, если неравенство нестрогое и они не совпадают с нулями знаменателя.',['Разложить числитель и знаменатель на линейные множители.','Отметить все корни на прямой: корни знаменателя «выколоты», корни числителя закрашены при нестрогом знаке.','Определить знак на самом правом промежутке (там все множители положительны) и расставить знаки справа налево с чередованием.','Выбрать промежутки с нужным знаком и записать ответ, добавив изолированные точки, если они есть.'],'Включают в ответ корень знаменателя или забывают, что знаки не чередуются, когда корень повторяется (в этой задаче корни простые).');
+const th15e=E('Показательное неравенство с одним основанием часто сводится к квадратному заменой t = b<sup>x</sup>, где t > 0. Показательная функция с основанием b > 1 возрастает: из t₁ ≤ t₂ следует x₁ ≤ x₂. Неравенство вида (t − m)(t − n) ≤ 0 выполняется между корнями, а (t − m)(t − n) ≥ 0 вне корней.',['Заметить, что b<sup>2x</sup> = (b<sup>x</sup>)², и ввести t = b<sup>x</sup>, t > 0.','Решить квадратное неравенство относительно t.','Вернуться к x: решить простейшие показательные неравенства.'],'Забывают, что t > 0, а также переворачивают знак неравенства при возвращении к x. Для основания, большего 1, знак сохраняется.');
+const th15l=E('Логарифмическое неравенство начинают с области определения: выражения под знаком логарифма положительны. Сумма логарифмов с одним основанием равна логарифму произведения. Если основание больше 1, логарифмическая функция возрастает, поэтому log<sub>b</sub> u ≤ c равносильно u ≤ b<sup>c</sup> (при u > 0), и знак неравенства сохраняется.',['Записать область определения: каждое выражение под логарифмом положительно.','Заменить сумму логарифмов логарифмом произведения.','Перейти к неравенству без логарифмов: (x − p)(x − q) ≤ b<sup>c</sup> (для основания, большего 1).','Решить квадратное неравенство и пересечь результат с областью определения.'],'Не пересекают решение с областью определения. Корни квадратного неравенства могут лежать вне области определения, и тогда часть «решения» не годится.');
+const gen15r=()=>{
+  let p,q,r;do{p=ri(-6,6);q=ri(-6,6);r=ri(-6,6);}while(p===q||p===r||q===r);
+  const form=ri(0,1);const wantNeg=Math.random()<.5;const strict=Math.random()<.35;
+  const numR=form===0?[p,q]:[p];const denR=form===0?[r]:[q,r];
+  const nS=numR.length===2?poly([[1,'x²'],[-(p+q),'x'],[p*q,'']]):xs(-p);
+  const dS=denR.length===2?poly([[1,'x²'],[-(q+r),'x'],[q*r,'']]):xs(-r);
+  const sol0=solveRat(numR,denR,wantNeg,strict);
+  const op=(wantNeg?'<':'>')+(strict?'':'=');const opS=op==='<='?'≤':op==='>='?'≥':op;
+  const fac=a=>a.map(x=>`(x ${x<0?'+':'−'} ${Math.abs(x)})`).join('').replace(/\(x − 0\)|\(x \+ 0\)/g,'x');
+  const signLine=sol0.signs.map(s=>`${s.lo===-Infinity?'(−∞':'('+N(s.lo)}; ${s.hi===Infinity?'+∞)':N(s.hi)+')'}: ${s.pos?'+':'−'}`).join(',  ');
+  return{q:`Решите неравенство ${fr(nS,dS)} ${opS} 0.`,
+   ans:`${ivStr(sol0.seg)}.`,
+   sol:`Разложим на множители: числитель ${numR.length===2?`${nS} = ${fac(numR)}`:xs(-p)}, знаменатель ${denR.length===2?`${dS} = ${fac(denR)}`:xs(-r)}. Неравенство равносильно ${fr(fac(numR),fac(denR))} ${opS} 0.<br>Нули числителя: ${numR.map(N).join(', ')}. Нули знаменателя: ${denR.map(N).join(', ')} (они не входят в ответ).<br>Знаки дроби на промежутках: ${signLine}.<br>Нужны промежутки, где выражение ${wantNeg?'отрицательно':'положительно'}${strict?'':' или равно нулю'}. Ответ: ${ivStr(sol0.seg)}.`,
+   figSol:nline({min:Math.min(...sol0.crit)-2,max:Math.max(...sol0.crit)+2,ticks:sol0.crit.map(v=>({v,l:N(v)})),shade:sol0.seg}),
+   th:th15r,v:{t:15,kind:'rat',numR,denR,wantNeg,strict,seg:sol0.seg}};
+};
+const gen15e=()=>{
+  const b=pick([2,3]);const mxE=b===2?3:2;let m,n;do{m=ri(0,mxE);n=ri(0,mxE);}while(n<=m);
+  const ge=Math.random()<.5;const bm=b**m,bn=b**n;
+  const mid=bm+bn,prod=b**(m+n);
+  const stmt=`${b*b}<sup>x</sup> − ${mid}·${b}<sup>x</sup> + ${prod} ${ge?'≥':'≤'} 0`;
+  const seg=ge?[{a:-Infinity,b:m,la:false,lb:true},{a:n,b:Infinity,la:true,lb:false}]:[{a:m,b:n,la:true,lb:true}];
+  return{q:`Решите неравенство ${stmt}.`,
+   ans:`${ivStr(seg)}.`,
+   sol:`Так как ${b*b}<sup>x</sup> = (${b}<sup>x</sup>)², сделаем замену t = ${b}<sup>x</sup>, t > 0. Получаем t² − ${mid}t + ${prod} ${ge?'≥':'≤'} 0, то есть (t − ${bm})(t − ${bn}) ${ge?'≥':'≤'} 0.<br>${ge?`Это выполняется при t ≤ ${bm} или t ≥ ${bn}. С учётом t > 0: 0 < ${b}<sup>x</sup> ≤ ${bm} или ${b}<sup>x</sup> ≥ ${bn}.`:`Это выполняется при ${bm} ≤ t ≤ ${bn} (оба числа положительны).`}<br>Возвращаемся к x: ${ge?`${b}<sup>x</sup> ≤ ${b}<sup>${m}</sup> даёт x ≤ ${m}, а ${b}<sup>x</sup> ≥ ${b}<sup>${n}</sup> даёт x ≥ ${n}`:`${b}<sup>${m}</sup> ≤ ${b}<sup>x</sup> ≤ ${b}<sup>${n}</sup>, то есть ${m} ≤ x ≤ ${n}`} (основание больше 1, знак сохраняется).<br>Ответ: ${ivStr(seg)}.`,
+   figSol:nline({min:Math.min(m,n)-2,max:Math.max(m,n)+2,ticks:[{v:m,l:String(m)},{v:n,l:String(n)}],shade:seg}),
+   th:th15e,v:{t:15,kind:'exp',b,mid,prod,ge,seg}};
+};
+const L15=[[2,2,1,4],[2,3,2,4],[2,3,1,8],[2,4,2,8],[2,5,4,8],[3,2,1,9],[3,3,3,9]];
+const gen15l=()=>{
+  const [b,c,d,e]=pick(L15);const p=ri(-4,2),q=p+e-d;const ge=Math.random()<.5;const r1=p-d,r2=q+d;const bc=b**c;
+  const seg=ge?[{a:r2,b:Infinity,la:true,lb:false}]:[{a:q,b:r2,la:false,lb:true}];
+  const lgS=u=>`${lg(b)}(${u})`;
+  return{q:`Решите неравенство ${lgS(xs(-p))} + ${lgS(xs(-q))} ${ge?'≥':'≤'} ${c}.`,
+   ans:`${ivStr(seg)}.`,
+   sol:`Область определения: ${fx(p)} > 0 и ${fx(q)} > 0, то есть x > ${N(q)} (так как ${N(q)} > ${N(p)}).<br>Сумма логарифмов равна логарифму произведения: ${lgS(pf(p)+pf(q))} ${ge?'≥':'≤'} ${c}. Основание ${b} > 1, поэтому ${pf(p)}${pf(q)} ${ge?'≥':'≤'} ${b}<sup>${c}</sup> = ${bc}.<br>Раскроем скобки и перенесём: ${poly([[1,'x²'],[-(p+q),'x'],[p*q-bc,'']])} ${ge?'≥':'≤'} 0. Корни по теореме Виета: ${N(r1)} и ${N(r2)} (их сумма ${N(p+q)}, произведение ${N(r1*r2)}).<br>${ge?`Неравенство выполняется при x ≤ ${N(r1)} или x ≥ ${N(r2)}.`:`Неравенство выполняется при ${N(r1)} ≤ x ≤ ${N(r2)}.`} Пересекаем с областью определения x > ${N(q)}: ${ge?`x ≤ ${N(r1)} не подходит (${N(r1)} < ${N(q)}), остаётся x ≥ ${N(r2)}`:`получаем ${N(q)} < x ≤ ${N(r2)}`}.<br>Ответ: ${ivStr(seg)}.`,
+   figSol:nline({min:Math.min(r1,p)-2,max:r2+3,ticks:[{v:r1,l:N(r1)},{v:q,l:N(q)},{v:r2,l:N(r2)}],shade:seg}),
+   th:th15l,v:{t:15,kind:'log',b,c,p,q,ge,seg}};
+};
+def(15,'Неравенства','Метод интервалов, показательные и логарифмические',[gen15r,gen15e,gen15l]);
+
+/* ---------- 16: экономическая задача ---------- */
+const crit16='<b>2 балла:</b> обоснованно получен верный ответ. <b>1 балл:</b> составлена верная математическая модель (формулы для долга и платежей), но допущена вычислительная ошибка или не доведено решение до ответа. <b>0 баллов:</b> остальные случаи.';
+function figBars(S,n){
+  const W=400,top=18,base=140,w=(W-30)/n;let s='';
+  for(let k=0;k<n;k++){const h=(1-k/n)*(base-top-14);s+=RC(15+k*w+1,base-h,Math.max(1,w-2),h,k===0||k===n-1?'fa':'fdim');}
+  s+=L(10,base,W-10,base,'sm')+TX(15+w/2,top,'S','middle','ta')+TX(15+(n-0.5)*w,base-(1/n)*(base-top-14)-6,'S/'+n,'middle','ta')+TX(W/2,base+20,'долг на 15-е число каждого месяца уменьшается на одну и ту же сумму','middle','tm');
+  return SV(W,base+30,s);
+}
+function figChain(k,r){
+  const items=[['кредит','S'],['январь','×'+N(k)],['платёж','− x'],['январь','×'+N(k)],['платёж','− x'],['итог','0']];
+  let s='';items.forEach((it,i)=>{const x=6+i*66;s+=RC(x,40,56,40,'sk fsft',8)+TX(x+28,65,it[1],'middle','tc')+TX(x+28,30,it[0],'middle','tm');if(i<5)s+=AR(x+57,60,x+65,60,'sk');});
+  s+=TX(200,112,'каждый январь долг растёт на '+r+'%','middle','tm');
+  return SV(400,125,s);
+}
+const th16d=E('Если долг на 15-е число каждый месяц уменьшается на одну и ту же сумму, то долги на 15-е число образуют арифметическую прогрессию: S, S·(1 − 1/n), S·(1 − 2/n), …, S/n. Переплата за месяц — это r% от долга на 15-е число предыдущего месяца. Сумма n членов арифметической прогрессии: n·(первый + последний) : 2.',['Выписать долги на 15-е число каждого месяца: это арифметическая прогрессия.','Найти сумму этих долгов: S·(n + 1) : 2.','Переплата равна r% от этой суммы.','Общая выплата = сумма кредита + переплата (или найти r из условия про переплату).'],'Считают проценты от всей суммы кредита в каждом месяце. Проценты начисляются на оставшийся долг, а он уменьшается.');
+const th16a=E('При равных ежегодных платежах x удобно идти по годам. Если ставка r%, то каждый январь долг умножается на k = 1 + r/100, затем выплачивается x. После первого года долг равен S·k − x, после второго (S·k − x)·k − x. Когда кредит погашен за два платежа, этот остаток равен нулю.',['Обозначить k = 1 + r/100 и ежегодный платёж x.','Выписать долг после каждой выплаты.','Приравнять долг после последней выплаты к нулю.','Решить уравнение: x = S·k² : (k + 1) или S = x·(k + 1) : k².'],'Умножают на r вместо k = 1 + r/100 и забывают, что проценты начисляются до платежа, а не после.');
+const gen16d=()=>{
+  let S,n,r,ov;do{S=pick([600,800,1000,1200,1500,1800,2000,2400]);n=pick([5,6,9,10,12,15,18,20,24]);r=pick([1,2,3,4,5,6]);ov=r*S*(n+1)/200;}while(!Number.isInteger(ov));
+  const cond=`15 января планируется взять кредит в банке на ${n} месяцев в размере ${S} тыс. рублей. Условия его возврата таковы:<br>— 1-го числа каждого месяца долг возрастает на ${r}% по сравнению с концом предыдущего месяца;<br>— со 2-го по 14-е число каждого месяца необходимо выплатить часть долга;<br>— 15-го числа каждого месяца долг должен быть на одну и ту же сумму меньше долга на 15-е число предыдущего месяца.<br>`;
+  const base=`Долги на 15-е число образуют арифметическую прогрессию: ${S}, ${S}·(1 − 1/${n}), …, ${S}/${n}. Их сумма равна ${S}·(${n} + 1)/2 = ${N(S*(n+1)/2)}. Каждый месяц банк начисляет ${r}% на долг предыдущего 15-го числа, поэтому общая переплата равна ${r}% от этой суммы: ${N(ov)} тыс. рублей.`;
+  if(Math.random()<.5)return{q:cond+`Найдите общую сумму выплат банку за весь срок кредита (в тыс. рублей).`,fig:figBars(S,n),ans:`${N(S+ov)} тыс. рублей.`,sol:`${base}<br>Всего выплачено: ${S} + ${N(ov)} = ${N(S+ov)} тыс. рублей.`,th:th16d,v:{t:16,kind:'diff',S,n,r,val:S+ov}};
+  return{q:cond+`Известно, что общая сумма выплат превысит сумму кредита на ${N(ov)} тыс. рублей. Найдите r.`,fig:figBars(S,n),ans:`r = ${r}.`,sol:`Переплата за весь срок равна r% от суммы долгов на 15-е число. Эти долги образуют арифметическую прогрессию с суммой ${S}·(${n} + 1)/2 = ${N(S*(n+1)/2)}.<br>Получаем уравнение r/100·${N(S*(n+1)/2)} = ${N(ov)}, откуда r = ${N(ov)}·100 : ${N(S*(n+1)/2)} = ${r}.`,th:th16d,v:{t:16,kind:'diffr',S,n,r,ov,val:r}};
+};
+const AN=[[10,2.1,1.21],[20,5.5,3.6],[25,3.6,2.5],[50,1,0.9],[40,6,4.9],[30,2.3,1.69],[60,6.5,6.4]];
+const gen16a=()=>{
+  const [r,S0,x0]=pick(AN);const j=pick([1,2]);const S=rnd(S0*j),x=rnd(x0*j);const k=1+r/100;const findX=Math.random()<.5;
+  const cond=`В июле планируется взять кредит в банке на сумму ${N(S)} млн рублей на 2 года. Условия его возврата таковы:<br>— каждый январь долг возрастает на ${r}% по сравнению с концом предыдущего года;<br>— с февраля по июнь каждого года необходимо выплатить часть долга;<br>— платежи в первый и во второй годы равны, после второго платежа кредит полностью погашен.<br>`;
+  const form=`Пусть k = 1 + ${r}/100 = ${N(k)}, а ежегодный платёж равен x. После первого года долг равен ${N(S)}·${N(k)} − x, после второго (${N(S)}·${N(k)} − x)·${N(k)} − x = 0.`;
+  if(findX)return{q:cond+`Найдите ежегодный платёж (в млн рублей).`,fig:figChain(k,r),ans:`${N(x)} млн рублей.`,sol:`${form}<br>Отсюда x·(${N(k)} + 1) = ${N(S)}·${N(rnd(k*k))}, x = ${N(rnd(S*k*k))} : ${N(rnd(k+1))} = ${N(x)} млн рублей.`,th:th16a,v:{t:16,kind:'ann',S,r,x,val:x}};
+  return{q:cond.replace(`на сумму ${N(S)} млн рублей`,'на некоторую сумму').replace('платежи в первый и во второй годы равны','платежи в первый и во второй годы равны '+N(x)+' млн рублей каждый')+`Найдите сумму кредита (в млн рублей).`,fig:figChain(k,r),ans:`${N(S)} млн рублей.`,sol:`Пусть кредит равен S, k = 1 + ${r}/100 = ${N(k)}, платёж x = ${N(x)}. После первого года долг равен ${N(k)}S − ${N(x)}, после второго (${N(k)}S − ${N(x)})·${N(k)} − ${N(x)} = 0.<br>Отсюда ${N(rnd(k*k))}·S = ${N(x)}·(${N(k)} + 1), S = ${N(rnd(x*(k+1)))} : ${N(rnd(k*k))} = ${N(S)} млн рублей.`,th:th16a,v:{t:16,kind:'annS',S,r,x,val:S}};
+};
+def(16,'Экономическая задача','Кредиты и платежи',[gen16d,gen16a]);
+
+/* ---------- 17: планиметрия ---------- */
+const crit17='<b>3 балла:</b> обоснованно получены верные ответы в обоих пунктах. <b>2 балла:</b> верно доказано утверждение пункта а, а в пункте б ход решения верный, но допущена ошибка в вычислениях; или обоснованно решён пункт б без доказательства пункта а. <b>1 балл:</b> выполнено только доказательство пункта а. <b>0 баллов:</b> остальные случаи.';
+function figTrapO(){
+  const A=[40,165],D=[310,165],B=[115,55],C=[235,55];const O=isect(A,C,B,D);
+  let s=PG([A,B,C,D],'sk fsft')+PG([B,O,C],'fac')+PG([A,O,D],'fac')+L(...A,...C,'sa')+L(...B,...D,'sa');
+  [['A',A,-9,15,'end'],['B',B,-9,-4,'end'],['C',C,9,-4,'start'],['D',D,9,15,'start'],['O',O,0,-9,'middle']].forEach(([n,p,dx,dy,an])=>{s+=DTt(p[0],p[1],2.6,'fk')+TX(p[0]+dx,p[1]+dy,n,an);});
+  return SV(350,190,s);
+}
+function figChordsM(){
+  const cx=150,cy=118,r=84;const P=a=>[cx+r*Math.cos(a*Math.PI/180),cy-r*Math.sin(a*Math.PI/180)];
+  const A=P(150),B=P(20),C=P(100),D=P(230);const M=isect(A,B,C,D);
+  let s=CI(cx,cy,r,'sk fsft')+L(...A,...B,'sa')+L(...C,...D,'sa');
+  [['A',A],['B',B],['C',C],['D',D]].forEach(([n,p])=>{const dx=(p[0]-cx)*.17,dy=(p[1]-cy)*.17+5;s+=DTt(p[0],p[1],2.8,'fk')+TX(p[0]+dx,p[1]+dy,n);});
+  s+=DTt(M[0],M[1],3,'fa')+TX(M[0]+12,M[1]+16,'M','middle','ta');
+  return SV(300,235,s);
+}
+function figAlt(){
+  const A=[30,170],B=[290,170];const cx=160,r=130;const phi=115*Math.PI/180;const C=[cx+r*Math.cos(phi),170-r*Math.sin(phi)];const H=[C[0],170];
+  let s=PG([A,B,C],'sk fsft')+L(...C,...H,'sa sd');
+  const ux=(A[0]-C[0]),uy=(A[1]-C[1]),vx=(B[0]-C[0]),vy=(B[1]-C[1]);const lu=Math.hypot(ux,uy),lv=Math.hypot(vx,vy);
+  s+=RA(C[0],C[1],ux/lu,uy/lu,vx/lv,vy/lv,12)+RA(H[0],H[1],-1,0,0,-1,9);
+  [['A',A,-9,15,'end'],['B',B,9,15,'start'],['C',C,0,-9,'middle'],['H',H,0,19,'middle']].forEach(([n,p,dx,dy,an])=>{s+=DTt(p[0],p[1],2.6,'fk')+TX(p[0]+dx,p[1]+dy,n,an);});
+  return SV(320,205,s);
+}
+const th17t=E('Диагонали трапеции делят её на четыре треугольника. Треугольники при основаниях (BOC и AOD) подобны, а их площади относятся как квадрат коэффициента подобия. Треугольники при боковых сторонах (AOB и COD) равновелики. Площадь трапеции складывается из площадей четырёх треугольников. Если площади подобных треугольников равны S₁ и S₂, то коэффициент подобия равен √(S₁ : S₂).',['Доказать равенство площадей AOB и COD: треугольники ABD и ACD равновелики (общее основание AD и равные высоты), вычесть общий треугольник AOD.','Найти коэффициент подобия k треугольников BOC и AOD из отношения площадей.','Площадь AOB равна k·S(AOD), так как у AOB и AOD общая высота, а основания относятся как OB : OD = k.','Сложить четыре площади.'],'Принимают отношение площадей за коэффициент подобия. Площади относятся как квадрат коэффициента: коэффициент равен корню из отношения площадей.');
+const th17c=E('Теорема о пересекающихся хордах: если хорды AB и CD пересекаются в точке M, то AM·MB = CM·MD. Доказывается подобием треугольников: вписанные углы, опирающиеся на одну дугу, равны, а вертикальные углы при точке M равны.',['Выбрать два треугольника, содержащих нужные отрезки (AMC и DMB).','Найти два равных угла: вписанные углы CAB и CDB опираются на дугу CB, а углы при M вертикальные.','Записать пропорцию из подобия и преобразовать к произведениям отрезков.','Подставить числа и найти неизвестный отрезок.'],'Составляют пропорцию из сторон, которые не соответствуют друг другу при подобии. Сначала определите, какая вершина какой соответствует.');
+const th17h=E('В прямоугольном треугольнике высота, опущенная на гипотенузу, делит его на два треугольника, подобных исходному и друг другу. Отсюда следует: CH² = AH·HB (высота есть среднее геометрическое проекций катетов на гипотенузу). Площадь треугольника равна половине произведения основания и высоты.',['Доказать подобие треугольников AHC и CHB по двум углам.','Из подобия составить пропорцию CH : HB = AH : CH и получить CH² = AH·HB.','Найти CH, затем гипотенузу AB = AH + HB.','Площадь: S = ½·AB·CH.'],'Берут гипотенузу равной AH или HB. Гипотенуза равна сумме AH + HB.');
+const gen17t=()=>{
+  let m=ri(1,8),n=ri(1,8);while(n===m)n=ri(1,8);const S1=n*n,S2=m*m;const area=(m+n)**2,lat=m*n;
+  return{q:`Диагонали трапеции ABCD с основаниями BC и AD пересекаются в точке O.<br>а) Докажите, что площади треугольников AOB и COD равны.<br>б) Найдите площадь трапеции, если площади треугольников BOC и AOD равны ${S1} и ${S2}.`,
+   fig:figTrapO(),ans:`б) ${area}.`,
+   sol:`<b>а)</b> Треугольники ABD и ACD имеют общее основание AD, а их высоты равны расстоянию между параллельными прямыми BC и AD. Значит, S(ABD) = S(ACD). Вычитая из обеих площадей площадь общего треугольника AOD, получаем S(AOB) = S(COD).<br><b>б)</b> Треугольники BOC и AOD подобны (BC ∥ AD), коэффициент подобия k² = ${S1} : ${S2}, откуда k = ${n}/${m}.<br>Треугольники AOB и AOD имеют общую высоту из вершины A, поэтому S(AOB) : S(AOD) = OB : OD = k. Значит, S(AOB) = (${n}/${m})·${S2} = ${lat}, и S(COD) тоже ${lat}.<br>Площадь трапеции: ${S1} + ${S2} + ${lat} + ${lat} = ${area}. (Общая формула: (√S₁ + √S₂)² = (${n} + ${m})² = ${area}.)`,
+   th:th17t,v:{t:17,val:area}};
+};
+const gen17c=()=>{
+  let p,q,r,t;do{p=ri(2,9);q=ri(2,9);const ds=[];for(let d=2;d<=12;d++)if((p*q)%d===0&&(p*q)/d>=2)ds.push(d);r=pick(ds);t=p*q/r;}while(!t);
+  return{q:`Хорды AB и CD окружности пересекаются в точке M.<br>а) Докажите, что AM·MB = CM·MD.<br>б) Найдите MD, если AM = ${p}, MB = ${q}, CM = ${r}.`,
+   fig:figChordsM(),ans:`б) ${t}.`,
+   sol:`<b>а)</b> Рассмотрим треугольники AMC и DMB. Вписанные углы CAB и CDB опираются на одну дугу CB, поэтому они равны. Углы AMC и DMB вертикальные, значит тоже равны. Следовательно, треугольники AMC и DMB подобны по двум углам, и AM : DM = CM : BM. Отсюда AM·MB = CM·MD.<br><b>б)</b> MD = AM·MB : CM = ${p}·${q} : ${r} = ${t}.`,
+   th:th17c,v:{t:17,val:t}};
+};
+const gen17h=()=>{
+  let h,p,q;do{h=ri(4,12);const ds=[];for(let d=1;d<=h*h;d++)if((h*h)%d===0&&d<=36&&h*h/d<=36)ds.push(d);p=pick(ds);q=h*h/p;}while(p===q&&Math.random()<.7);
+  const area=(p+q)*h/2;
+  return{q:`В треугольнике ABC угол C прямой, CH — высота.<br>а) Докажите, что CH² = AH·HB.<br>б) Найдите площадь треугольника ABC, если AH = ${p}, HB = ${q}.`,
+   fig:figAlt(),ans:`б) ${N(area)}.`,
+   sol:`<b>а)</b> Углы ACH и CBH равны, так как каждый из них дополняет угол A до 90° (∠ACH = 90° − ∠A, ∠CBH = 90° − ∠A). Прямоугольные треугольники AHC и CHB подобны по острому углу, откуда AH : CH = CH : HB, то есть CH² = AH·HB.<br><b>б)</b> CH = √(${p}·${q}) = √${p*q} = ${h}. Гипотенуза AB = AH + HB = ${p} + ${q} = ${p+q}. Площадь S = ½·AB·CH = ½·${p+q}·${h} = ${N(area)}.`,
+   th:th17h,v:{t:17,val:area}};
+};
+def(17,'Планиметрия','Доказательство и вычисление',[gen17t,gen17c,gen17h]);
+
+/* ---------- 18: параметр ---------- */
+const crit18='<b>4 балла:</b> обоснованно получен верный ответ. <b>3 балла:</b> получен ответ, отличающийся от верного исключением или включением граничных значений параметра, либо ход решения верный, но допущена вычислительная ошибка. <b>2 балла:</b> верно найдены ключевые значения параметра, но промежутки выбраны неверно. <b>1 балл:</b> задача сведена к верной модели (например, выполнен верный график), но дальнейшего продвижения нет. <b>0 баллов:</b> остальные случаи.';
+const th18p=E('Если уравнение раскладывается на множители, его корни выражаются через параметр. Тогда условие «ровно один корень на отрезке» превращается в условие на параметр: каждый корень принадлежит отрезку при a из некоторого промежутка. Нужно найти эти два промежутка и взять те значения a, при которых в отрезок попадает ровно один из корней: исключить точки, где попадают оба.',['Разложить левую часть на множители и найти корни через a.','Для каждого корня записать условие «корень лежит на отрезке» как неравенство для a.','Получить два числовых промежутка для a.','Выбрать значения a, лежащие ровно в одном из промежутков (симметрическая разность). Проверить граничные значения подстановкой.'],'Забывают исключить значения a, при которых в отрезок попадают сразу оба корня. Граничные значения всегда проверяйте подстановкой.');
+const th18g=E('Уравнение вида |f(x)| = a удобно решать графически: число корней равно числу точек пересечения графика y = |f(x)| и горизонтальной прямой y = a. График строят по шагам: сначала для x ≥ 0 строят параболу x² − sx + c, потом отражают его влево (функция чётна, так как стоит |x|), потом отражают вниз лежащие части вверх (модуль). Число пересечений меняется в точках экстремумов и на оси: надо отдельно разобрать эти значения a.',['Построить y = x² − s·x + c при x ≥ 0 и найти нули и вершину.','Отразить график относительно оси y (чётность), затем поднять части ниже оси x (модуль).','Выписать характерные значения a: нули функции, значения в локальных максимумах и в точке x = 0.','Для каждого промежутка между ними посчитать число пересечений и выбрать нужные a.','Отдельно разобрать сами значения a в точках смены числа корней.'],'Пропускают значения a, при которых прямая проходит через вершину или через точку x = 0: там число корней отличается от соседних промежутков.');
+const gen18p=()=>{
+  const m=ri(1,3),p=ri(-4,2),q=p+ri(1,8);
+  const J2=[p-m,q-m],J1=[p+m,q+m];let seg;
+  if(q-p>=2*m)seg=[{a:p-m,b:p+m,la:true,lb:false},{a:q-m,b:q+m,la:false,lb:true}];else seg=[{a:J2[0],b:J2[1],la:true,lb:true},{a:J1[0],b:J1[1],la:true,lb:true}];
+  const both=q-p>=2*m;
+  return{q:`Найдите все значения параметра a, при каждом из которых уравнение x² − 2ax + a² − ${m*m} = 0 имеет ровно один корень на отрезке [${N(p)}; ${N(q)}].`,
+   ans:`${ivStr(seg)}.`,
+   sol:`Левая часть — полный квадрат минус ${m*m}: (x − a)² − ${m*m} = (x − a − ${m})(x − a + ${m}). Корни: x₁ = a − ${m} и x₂ = a + ${m}, они различны.<br>Корень x₁ лежит на [${N(p)}; ${N(q)}] при ${N(p)} ≤ a − ${m} ≤ ${N(q)}, то есть a ∈ [${N(p+m)}; ${N(q+m)}].<br>Корень x₂ лежит на отрезке при ${N(p)} ≤ a + ${m} ≤ ${N(q)}, то есть a ∈ [${N(p-m)}; ${N(q-m)}].<br>${both?`Длина отрезка ${N(q-p)} не меньше 2·${m}, поэтому промежутки пересекаются ${q-p===2*m?'в единственной точке a = '+N(p+m):'по [' +N(p+m)+'; '+N(q-m)+']'}, где в отрезок попадают оба корня. Нужны значения, принадлежащие ровно одному промежутку: a ∈ [${N(p-m)}; ${N(p+m)}) и a ∈ (${N(q-m)}; ${N(q+m)}].`:`Длина отрезка ${N(q-p)} меньше 2·${m}, поэтому промежутки не пересекаются, и оба корня сразу в отрезке быть не могут. Подходят значения из обоих промежутков.`}<br>Ответ: ${ivStr(seg)}.`,
+   figSol:nline({min:p-m-2,max:q+m+2,ticks:[{v:p-m,l:N(p-m)},{v:p+m,l:N(p+m)},{v:q-m,l:N(q-m)},{v:q+m,l:N(q+m)}],shade:seg}),
+   th:th18p,v:{t:18,kind:'one',m,p,q,seg}};
+};
+const gen18g=()=>{
+  const [u,v]=pick([[1,3],[1,5],[2,4],[3,5],[2,6],[3,7],[4,6],[4,8]]);const s=u+v,c=u*v,h=((v-u)/2)**2;
+  const k=pick([2,3,4,6,8]);
+  const seg=k===2?[{a:c,b:Infinity,la:false,lb:false}]:k===3?[{a:c,b:c,la:true,lb:true}]:k===4?[{a:0,b:0,la:true,lb:true},{a:h,b:c,la:false,lb:false}]:k===6?[{a:h,b:h,la:true,lb:true}]:[{a:0,b:h,la:false,lb:false}];
+  const kw={2:'два корня',3:'три корня',4:'четыре корня',6:'шесть корней',8:'восемь корней'}[k];
+  const f=x=>Math.abs(x*x-s*Math.abs(x)+c);const xm=v+2;
+  return{q:`Найдите все значения параметра a, при каждом из которых уравнение |x² − ${s}|x| + ${c}| = a имеет ровно ${kw}.`,
+   ans:`${ivStr(seg)}.`,
+   sol:`Построим график y = |x² − ${s}|x| + ${c}|. При x ≥ 0 это модуль параболы y = x² − ${s}x + ${c} = (x − ${u})(x − ${v}); вершина параболы в точке (${N(s/2)}; −${N(h)}), значит локальный максимум полученного графика равен ${N(h)} при |x| = ${N(s/2)}. Функция чётна, поэтому график симметричен относительно оси y; при x = 0 значение равно ${c}.<br>Число корней при разных a (по числу пересечений с прямой y = a):<br>a &lt; 0: корней нет; a = 0: 4 корня (x = ±${u}, ±${v}); 0 &lt; a &lt; ${N(h)}: 8 корней; a = ${N(h)}: 6 корней; ${N(h)} &lt; a &lt; ${c}: 4 корня; a = ${c}: 3 корня; a &gt; ${c}: 2 корня.<br>Нужно ровно ${kw}. Ответ: ${ivStr(seg)}.`,
+   figSol:plot({xmin:-xm,xmax:xm,ymin:-1,ymax:Math.ceil(c*1.25),curves:[{f}],hl:[{y:h,label:'a = '+N(h)},{y:c,label:'a = '+c}],ticks:'xy'}),
+   th:th18g,v:{t:18,kind:'cnt',s,c,h,k,seg}};
+};
+def(18,'Параметр','Корни на отрезке и графический метод',[gen18p,gen18g]);
+
+/* ---------- 19: теория чисел ---------- */
+const crit19='<b>4 балла:</b> верно получены все требуемые результаты и они обоснованы. <b>3 балла:</b> верно решены два пункта или решены все три пункта, но в одном допущена неточность в обосновании. <b>2 балла:</b> верно решён один пункт, либо верно приведён пример или оценка для последнего пункта. <b>1 балл:</b> получен какой-то верный промежуточный результат. <b>0 баллов:</b> остальные случаи.';
+const th19s=E('В задачах про наборы чисел требуется оценка и пример. Сумма k различных натуральных чисел не меньше 1 + 2 + … + k = k(k + 1)/2 и не больше суммы k наибольших допустимых чисел. Любое целое значение между минимумом и максимумом достижимо: увеличивая одно число на 1 (если оно ещё не равно соседнему справа), меняем сумму ровно на 1. Среднее арифметическое набора равно сумме, делённой на k, поэтому его максимум достигается на наборе из k наибольших чисел.',['Найти наименьшую и наибольшую возможную сумму набора (суммы k наименьших и k наибольших допустимых чисел).','Решить пункты по оценкам: «может ли» значит попадает ли число между минимумом и максимумом.','Если число подходит, предъявить пример набора (сдвигать наибольшие числа вверх).','Количество различных сумм равно максимум − минимум + 1.'],'Забывают проверить, что числа в наборе различны, или называют ответ «да» без примера. В таких задачах пример обязателен.');
+const th19d=E('Число кратно d, если оно равно d·m. У трёхзначных чисел m пробегает все целые значения от ⌈100/d⌉ до ⌊999/d⌋. Сумма цифр числа abc равна a + b + c. Задачу решают перебором с умом: перебирают кратные d, начиная с наименьшего (или с наибольшего), и считают сумму цифр, пока не найдётся нужное число. Для пункта «сколько всего» выписывают все подходящие числа.',['Выписать кратные d трёхзначные числа в нужном порядке.','Для каждого считать сумму цифр и сравнивать с заданной.','Остановиться на первом подходящем (для наименьшего и наибольшего).','Для подсчёта выписать все подходящие числа и пересчитать.'],'Пропускают числа при ручном переборе. Помогает запись в виде таблицы «число — сумма цифр».');
+const digSum=x=>String(x).split('').reduce((a,b)=>a+ +b,0);
+const gen19s=()=>{
+  const k=ri(4,8),top=ri(k+5,25);const mn=k*(k+1)/2,mx=k*(2*top-k+1)/2;
+  const inR=Math.random()<.6;const S0=inR?ri(mn,mx):(Math.random()<.5?mn-ri(1,3):mx+ri(1,3));
+  const yes=S0>=mn&&S0<=mx;let ex=null;
+  if(yes){let D=S0-mn;ex=[];for(let i=1;i<=k;i++)ex.push(i);for(let i=k-1;i>=0&&D>0;i--){const g=Math.min(D,top-k);ex[i]+=g;D-=g;}}
+  const avg=mx/k;
+  return{q:`Набор состоит из ${k} различных натуральных чисел, каждое из которых не превосходит ${top}.<br>а) Может ли сумма чисел набора равняться ${S0}?<br>б) Найдите наибольшее возможное среднее арифметическое чисел набора.<br>в) Сколько различных значений может принимать сумма чисел набора?`,
+   ans:`а) ${yes?'Да, может':'Нет, не может'}.<br>б) ${N(avg)}.<br>в) ${mx-mn+1}.`,
+   sol:`<b>Оценки суммы.</b> Наименьшая возможная сумма — у набора 1, 2, …, ${k}: ${mn}. Наибольшая — у набора ${top-k+1}, …, ${top}: (${top-k+1} + ${top})·${k} : 2 = ${mx}.<br><b>а)</b> ${yes?`Число ${S0} лежит между ${mn} и ${mx}, значит такая сумма возможна. Пример: ${ex.join(', ')}. Числа различны, не превосходят ${top}, их сумма равна ${S0}.`:`Число ${S0} ${S0<mn?`меньше наименьшей возможной суммы ${mn}`:`больше наибольшей возможной суммы ${mx}`}, поэтому такой суммы быть не может.`}<br><b>б)</b> Среднее арифметическое набора равно сумме, делённой на ${k}, и наибольшее при наибольшей сумме: ${mx} : ${k} = ${N(avg)}.<br><b>в)</b> Минимальная сумма ${mn}, максимальная ${mx}. Любое целое значение между ними достижимо: если набор не состоит из наибольших допустимых чисел, то хотя бы одно число можно увеличить на 1, сохранив различие чисел, и сумма изменится ровно на 1. Значит, возможны все целые значения от ${mn} до ${mx}, их ${mx} − ${mn} + 1 = ${mx-mn+1}.`,
+   th:th19s,v:{t:19,kind:'set',k,top,S0,yes,ex,mn,mx,avg,cnt:mx-mn+1}};
+};
+const gen19d=()=>{
+  let d,s,list;let tries=0;do{d=pick([7,11,13,17,19,23,29]);s=ri(9,24);list=[];for(let x=Math.ceil(100/d)*d;x<1000;x+=d)if(digSum(x)===s)list.push(x);tries++;}while(list.length<3&&tries<400);
+  const first=Math.ceil(100/d)*d,last=Math.floor(999/d)*d;
+  const trace=(from,step)=>{const out=[];for(let x=from;x>=100&&x<=999;x+=step){out.push(x);if(digSum(x)===s)break;}
+    return out.length>12?out.slice(0,5).map(x=>`${x} (${digSum(x)})`).join(', ')+', …, '+out.slice(-3).map(x=>`${x} (${digSum(x)})`).join(', '):out.map(x=>`${x} (${digSum(x)})`).join(', ');};
+  const mn=list[0],mx=list[list.length-1];
+  return{q:`Рассматриваются трёхзначные натуральные числа, кратные ${d}, сумма цифр которых равна ${s}.<br>а) Найдите наименьшее такое число.<br>б) Найдите наибольшее такое число.<br>в) Сколько всего таких чисел?`,
+   ans:`а) ${mn}.<br>б) ${mx}.<br>в) ${list.length}.`,
+   sol:`Трёхзначные числа, кратные ${d}, — это ${d}·m при m от ${first/d} до ${last/d} (от ${first} до ${last}). Для каждого проверяем сумму цифр (в скобках после числа).<br><b>а)</b> Идём от наименьшего вверх: ${trace(first,d)}. Первое число с суммой цифр ${s}: ${mn}.<br><b>б)</b> Идём от наибольшего вниз: ${trace(last,-d)}. Первое число с суммой цифр ${s}: ${mx}.<br><b>в)</b> Просматриваем все числа, кратные ${d}, от ${first} до ${last} (их ${(last-first)/d+1}), и отбираем те, у которых сумма цифр равна ${s}: ${list.join(', ')}. Всего ${list.length}.`,
+   th:th19d,v:{t:19,kind:'dig',d,s,mn,mx,cnt:list.length}};
+};
+def(19,'Теория чисел','Оценка, пример, перебор',[gen19s,gen19d]);
+
+/* баллы и критерии заданий части 2 */
+[[13,2,crit13],[14,3,crit14],[15,2,crit15],[16,2,crit16],[17,3,crit17],[18,4,crit18],[19,4,crit19]].forEach(([n,mx,cr])=>{const t=T[n-1];t.p2=true;t.max=mx;t.crit=cr;});
+</script>
+
+<script id="ui">
+const KEY='ege-profile-trainer-v1';
+function loadStore(){try{const r=JSON.parse(localStorage.getItem(KEY));if(r&&r.t)return r;}catch(e){}return{t:{}};}
+let store=loadStore();
+function saveStore(){try{localStorage.setItem(KEY,JSON.stringify(store));}catch(e){}}
+function pushH(s,v){s.h=s.h||[];s.h.push(Math.round(v*100)/100);if(s.h.length>10)s.h=s.h.slice(-10);}
+function rec(n,ok){const s=store.t[n]||(store.t[n]={d:0,o:0});s.d++;if(ok)s.o++;pushH(s,ok?1:0);saveStore();}
+function rec2(n,pts,max){const s=store.t[n]||(store.t[n]={d:0,o:0});s.d++;s.p=(s.p||0)+pts;s.m=(s.m||0)+max;pushH(s,max?pts/max:0);saveStore();}
+
+function parse(s){const t=String(s).trim().replace(/\s+/g,'').replace(',','.').replace(/[−–—]/g,'-');return /^-?\d+(\.\d+)?$/.test(t)?parseFloat(t):NaN;}
+const same=(x,y)=>Math.abs(x-y)<1e-7;
+const FALLBACK=n=>E('Разберите условие, выпишите известные величины и нужные формулы, затем подставьте числа.',['Выпишите, что дано и что нужно найти.','Вспомните формулу или свойство для этого типа задач.','Подставьте числа и вычислите.'],'');
+function make(n,prev){const g=T[n-1].gens;let r;for(let i=0;i<8;i++){r=pick(g)();if(r.q!==prev)break;}if(r.a!==undefined)r.a=rnd(r.a);r.n=n;if(!r.th)r.th=FALLBACK(n);return r;}
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+const plB=n=>{const b=n%10,a=n%100;return a>=11&&a<=14?'баллов':b===1?'балл':b>=2&&b<=4?'балла':'баллов';};
+
+const app=document.getElementById('app');
+let S={view:'home'};
+let resetArmed=false,resetTimer=null;
+
+function figHtml(c){return c.fig?`<div class="figbox">${c.fig}</div>`:'';}
+function expPanel(c,allowSol){
+  const showSol=allowSol&&!S.done;
+  return `<div>
+    <button class="btn ghost small" data-act="exp" aria-expanded="${S.expOpen?'true':'false'}" aria-controls="exp">${S.expOpen?'Скрыть объяснение':'Объяснение'}</button>
+    <div class="exp" id="exp" ${S.expOpen?'':'hidden'} style="margin-top:12px">${c.th}
+      ${showSol?`<div class="tools"><button class="btn ghost small" data-act="showsol">Показать решение этой задачи</button></div><div class="sol" id="solbox" ${S.solOpen?'':'hidden'} style="margin-top:12px"><span class="tag">Решение</span>${c.sol}</div>`:''}
+    </div></div>`;
+}
+function curScore(){return S.view==='variant'?S.scs[S.i]:S.sc;}
+function p2Block(c,t){
+  const sc=curScore();const has=sc!==null&&sc!==undefined;
+  let h='<div class="paper">Решите задачу на бумаге, как на экзамене: запишите ход решения и ответ. Потом сверьтесь.</div>';
+  if(S.rev===0)h+='<div class="ansrow"><button class="btn" data-act="rev1">Показать ответ</button></div>';
+  if(S.rev>=1)h+=`<div class="ansbox"><span class="tag">Ответ</span>${c.ans}</div>`;
+  if(S.rev===1)h+='<div class="ansrow"><button class="btn ghost" data-act="rev2">Показать полное решение</button></div>';
+  if(S.rev>=2){
+    h+=`<div class="sol"><span class="tag">Полное решение</span>${c.sol}</div>${c.figSol?`<div class="figbox">${c.figSol}</div>`:''}
+    <div class="rubric"><span class="tag" style="display:block;margin-bottom:4px">Критерии (упрощённые, по образцу ФИПИ)</span>${t.crit}</div>
+    <div><span class="alab">Сколько баллов вы себе поставите? Максимум ${t.max}</span>
+    <div class="scorebtns" style="margin-top:8px">${[...Array(t.max+1).keys()].map(k=>`<button class="sbtn" data-act="score" data-v="${k}" aria-pressed="${sc===k?'true':'false'}" ${has?'disabled':''}>${k}</button>`).join('')}</div></div>`;
+  }
+  return h;
+}
+function tile(t){
+  const s=store.t[t.n];let pct=0,stat='ещё не решали';
+  if(t.p2){if(s&&s.m){pct=Math.round(s.p/s.m*100);stat=`набрано ${s.p} из ${s.m} ${plB(s.m)}`;}}
+  else if(s&&s.d){pct=Math.round(s.o/s.d*100);stat=`верно ${s.o} из ${s.d}`;}
+  return `<button class="tile" data-act="topic" data-n="${t.n}">
+      <span class="row"><span class="num">${t.n}</span><span class="name">${t.name}</span>${t.p2?`<span class="pts">до ${t.max} ${plB(t.max)}</span>`:''}</span>
+      <span class="meta">${t.hint}</span>
+      <span class="bar"><i style="width:${pct}%"></i></span>
+      <span class="stat">${stat}</span>
+    </button>`;
+}
+
+function home(){
+  let d=0,o=0,d2=0,p=0,m=0;T.forEach(t=>{const s=store.t[t.n];if(!s)return;if(t.p2){d2+=s.d;p+=s.p||0;m+=s.m||0;}else{d+=s.d;o+=s.o;}});
+  const acc=d?Math.round(o/d*100)+'%':'—';
+  app.innerHTML=`
+  ${tabs('trainer')}
+  <header>
+    <div class="tag">ЕГЭ · профильная математика</div>
+    <h1>Все 19 заданий экзамена</h1>
+    <p class="lead">Задачи создаются заново при каждой попытке, числа меняются. В части 1 ответ вводится как в бланке и проверяется сразу. В части 2 вы решаете на бумаге, затем сверяетесь с ответом, полным решением и критериями и ставите себе баллы. К задачам есть рисунки, а кнопка «Объяснение» раскрывает теорию и план решения.</p>
+  </header>
+  <div class="summary"><span>Часть 1: решено <b>${d}</b>, верно <b>${o}</b>, точность <b>${acc}</b></span><span>Часть 2: оценено <b>${d2}</b>, набрано <b>${p}</b> из <b>${m}</b></span></div>
+  <div class="ctas">
+    <button class="cta" data-act="variant" data-kind="full"><strong>Полный вариант</strong><span>19 заданий, до 32 баллов</span></button>
+    <button class="cta alt" data-act="variant" data-kind="p1"><strong>Вариант части 1</strong><span>12 заданий, ответы проверяются</span></button>
+    <button class="cta alt" data-act="variant" data-kind="p2"><strong>Вариант части 2</strong><span>7 заданий, до 20 баллов</span></button>
+  </div>
+  <div class="sec"><h2>Часть 1. Краткий ответ</h2><span>Задания 1–12, по 1 баллу. Ответ — целое число или конечная десятичная дробь.</span></div>
+  <div class="grid">${T.filter(t=>!t.p2).map(tile).join('')}</div>
+  <div class="sec"><h2>Часть 2. Развёрнутый ответ</h2><span>Задания 13–19, всего 20 баллов. Самопроверка по решению и критериям.</span></div>
+  <div class="grid">${T.filter(t=>t.p2).map(tile).join('')}</div>
+  <div class="foot"><span>Прогресс хранится в этом браузере.</span>
+    <button class="link danger" data-act="reset">${resetArmed?'Нажмите ещё раз, чтобы стереть прогресс':'Сбросить прогресс'}</button></div>`;
+}
+
+function practice(){
+  const t=T[S.n-1],c=S.cur,r=S.res;
+  if(t.p2){
+    app.innerHTML=`
+  <div class="topbar"><button class="link" data-act="home">← Все задания</button><span class="sess">в этой серии: ${S.pts} из ${S.ptsMax} ${plB(S.ptsMax)}</span></div>
+  <article class="sheet">
+    <div class="sheet-head"><span class="chip">Задание ${t.n}</span><span class="tname">${t.name}</span><span class="pts">до ${t.max} ${plB(t.max)}</span></div>
+    <p class="q long">${c.q}</p>
+    ${figHtml(c)}
+    ${p2Block(c,t)}
+    ${S.sc!==null&&S.sc!==undefined?`<div class="fb ${S.sc===t.max?'ok':S.sc===0?'bad':'warn'}">Вы поставили себе ${S.sc} из ${t.max}.</div><div class="ansrow"><button class="btn" data-act="next">Следующая задача</button></div>`:''}
+    ${expPanel(c,false)}
+  </article>`;
+    return;
+  }
+  app.innerHTML=`
+  <div class="topbar"><button class="link" data-act="home">← Все задания</button><span class="sess">в этой серии: верно ${S.ok} из ${S.tot}</span></div>
+  <article class="sheet">
+    <div class="sheet-head"><span class="chip">Задание ${t.n}</span><span class="tname">${t.name}</span></div>
+    <p class="q">${c.q}</p>
+    ${figHtml(c)}
+    <div>
+      <label class="alab" for="ans">Ответ</label>
+      <div class="ansrow" style="margin-top:6px">
+        <input class="blank" id="ans" type="text" inputmode="decimal" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="9" ${S.done?`value="${esc(r.raw)}" disabled`:''}>
+        ${S.done?'<button class="btn" data-act="next">Следующая задача</button>':'<button class="btn" data-act="check">Проверить</button>'}
+      </div>
+      <p class="hint" style="margin-top:8px">Запятая или точка, минус для отрицательных чисел.</p>
+    </div>
+    <div id="fb">${S.msg?`<div class="fb warn">${S.msg}</div>`:''}${S.done?(r.ok?'<div class="fb ok">Верно.</div>':`<div class="fb bad">Неверно. Правильный ответ: <b>${N(c.a)}</b></div>`):''}</div>
+    ${S.done?`<div class="sol"><span class="tag">Разбор</span>${c.sol}</div>`:''}
+    ${expPanel(c,true)}
+  </article>`;
+  const i=document.getElementById('ans');if(i&&!S.done)i.focus({preventScroll:true});
+}
+
+function variant(){
+  const i=S.i,c=S.items[i],t=T[c.n-1],total=S.items.length;
+  const isLast=i===total-1;
+  let body;
+  if(t.p2){
+    const has=S.scs[i]!==null&&S.scs[i]!==undefined;
+    body=`<p class="q long">${c.q}</p>${figHtml(c)}${p2Block(c,t)}
+    <div class="ansrow"><button class="btn" data-act="vnext" ${has?'':'disabled'}>${isLast?'Завершить':'Дальше'}</button>${has?'':'<span class="hint">Сначала поставьте себе баллы после решения.</span>'}</div>`;
+  }else{
+    body=`<p class="q">${c.q}</p>${figHtml(c)}
+    <div>
+      <label class="alab" for="ans">Ответ</label>
+      <div class="ansrow" style="margin-top:6px">
+        <input class="blank" id="ans" type="text" inputmode="decimal" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="9" value="${esc(S.ans[i]||'')}">
+        <button class="btn" data-act="vnext">${isLast?'Завершить':'Дальше'}</button>
+      </div>
+      <p class="hint" style="margin-top:8px">Правильность покажем после последнего задания. Пустой ответ засчитывается как пропуск.</p>
+    </div>`;
+  }
+  app.innerHTML=`
+  <div class="topbar"><button class="link" data-act="home">← Выйти из варианта</button><span class="sess">задание ${i+1} из ${total}</span></div>
+  <div class="segs" style="grid-template-columns:repeat(${total},1fr)">${S.items.map((_,k)=>`<span class="seg ${k<i?'on':k===i?'cur':''}"></span>`).join('')}</div>
+  <article class="sheet">
+    <div class="sheet-head"><span class="chip">Задание ${c.n}</span><span class="tname">${t.name}</span>${t.p2?`<span class="pts">до ${t.max} ${plB(t.max)}</span>`:''}</div>
+    ${body}
+    ${expPanel(c,false)}
+  </article>`;
+  const inp=document.getElementById('ans');if(inp)inp.focus({preventScroll:true});
+}
+
+function result(){
+  const rows=S.items.map((c,k)=>{const t=T[c.n-1];
+    if(t.p2){return{c,t,p2:true,pts:S.scs[k]||0,max:t.max};}
+    const v=parse(S.ans[k]||'');const ok=!isNaN(v)&&same(v,c.a);return{c,t,ok,raw:S.ans[k]||'',pts:ok?1:0,max:1};});
+  const got=rows.reduce((a,r)=>a+r.pts,0),mx=rows.reduce((a,r)=>a+r.max,0);
+  const hasP2=rows.some(r=>r.p2);
+  app.innerHTML=`
+  <div class="topbar"><button class="link" data-act="home">← Все задания</button></div>
+  <header><div class="tag">Результат варианта</div><div class="score" style="margin-top:8px">${got}<small> из ${mx}</small></div>
+  <p class="lead" style="margin-top:8px">Это первичные баллы.${hasP2?' Баллы за часть 2 вы ставили себе сами, поэтому итог приблизительный.':''} Перевод в 100-балльную шкалу меняется каждый год, он здесь не считается.</p></header>
+  <div class="list">${rows.map(r=>{
+    const cls=r.p2?(r.pts===r.max?'ok':r.pts===0?'bad':'mid'):(r.ok?'ok':'bad');
+    const lab=r.p2?`${r.pts} из ${r.max}`:(r.ok?'верно':(r.raw.trim()?'неверно':'пропуск'));
+    return `<details class="item"><summary>
+      <span class="n">${r.c.n}</span><span class="t">${r.t.name}</span><span class="r ${cls}">${lab}</span></summary>
+      <div class="body"><p class="q ${r.p2?'long':''}" style="${r.p2?'':'font-size:17px'}">${r.c.q}</p>
+      ${figHtml(r.c)}
+      ${r.p2?`<div class="ansbox"><span class="tag">Ответ</span>${r.c.ans}</div>`:`<div class="ans">Ваш ответ: <b>${r.raw.trim()?esc(r.raw):'—'}</b> · Правильный ответ: <b>${N(r.c.a)}</b></div>`}
+      <div class="sol"><span class="tag">${r.p2?'Полное решение':'Решение'}</span>${r.c.sol}</div>
+      ${r.p2&&r.c.figSol?`<div class="figbox">${r.c.figSol}</div>`:''}
+      <details class="inner"><summary>Объяснение</summary><div class="exp" style="margin-top:8px">${r.c.th}</div></details></div>
+    </details>`;}).join('')}</div>
+  <div class="ansrow"><button class="btn" data-act="variant" data-kind="${S.kind}">Новый вариант</button><button class="btn ghost" data-act="home">К списку заданий</button></div>`;
+}
+
+
+
+/* ---------- Вкладка «Прогресс» ---------- */
+function saveRun(){
+  let g=0,a=0,b=0,m=0;
+  S.items.forEach((it,k)=>{const t=T[it.n-1];
+    if(t.p2){const v=S.scs[k]||0;b+=v;g+=v;m+=t.max;}
+    else{const v=parse(S.ans[k]||'');if(!isNaN(v)&&same(v,it.a)){a++;g++;}m+=1;}});
+  store.runs=store.runs||[];store.runs.push({k:S.kind,ts:Date.now(),g,m,a,b});
+  if(store.runs.length>200)store.runs=store.runs.slice(-200);saveStore();
+}
+function tabs(active){
+  return `<div class="tabs" role="tablist" aria-label="Разделы">
+    <button class="tab" role="tab" data-act="tab" data-tab="trainer" aria-selected="${active==='trainer'?'true':'false'}">Тренажёр</button>
+    <button class="tab" role="tab" data-act="tab" data-tab="progress" aria-selected="${active==='progress'?'true':'false'}">Прогресс</button>
+  </div>`;
+}
+const LVN={good:['✓','освоено'],mid:['◐','в процессе'],weak:['!','слабое место'],none:['–','не начато']};
+const lvOf=p=>p>=80?'good':p>=50?'mid':'weak';
+function taskStat(t){
+  const s=store.t[t.n];if(!s)return null;
+  if(t.p2){if(!s.m)return null;return{att:s.d,pct:Math.round(s.p/s.m*100),txt:`${s.p} из ${s.m} ${plB(s.m)}`,h:s.h||[]};}
+  if(!s.d)return null;return{att:s.d,pct:Math.round(s.o/s.d*100),txt:`верно ${s.o} из ${s.d}`,h:s.h||[]};
+}
+function spark(h){
+  const n=10,bw=5,gap=2,H=24,W=n*(bw+gap)-gap;let r='';const cnt=Math.min(h.length,n);
+  for(let k=0;k<n;k++){const idx=h.length-n+k,x=k*(bw+gap);
+    if(idx<0){r+=`<rect class="sp-n" x="${x}" y="${H-2}" width="${bw}" height="2" rx="1"/>`;continue;}
+    const v=h[idx],hh=Math.max(3,Math.round(v*H));
+    r+=`<rect class="sp-${lvOf(v*100)}" x="${x}" y="${H-hh}" width="${bw}" height="${hh}" rx="1.5"/>`;}
+  const lab=h.slice(-n).map(v=>Math.round(v*100)+'%').join(', ');
+  return `<svg class="spark" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="Последние ${cnt} попыток: ${lab}"><title>Последние ${cnt} попыток: ${lab}</title>${r}</svg>`;
+}
+function prow(t){
+  const st=taskStat(t);const lv=st?lvOf(st.pct):'none';const [ic,lab]=LVN[lv];
+  return `<div class="prow">
+    <span class="num sm">${t.n}</span>
+    <div class="pmid">
+      <div class="ptop"><span class="name">${t.name}</span><span class="pill lv-${lv}">${ic} ${lab}</span></div>
+      <div class="bar"><i class="b-${lv}" style="width:${st?st.pct:0}%"></i></div>
+      <span class="stat">${st?`${st.txt} · ${st.pct}% · попыток: ${st.att}`:'ещё не решали'}</span>
+    </div>
+    ${st?spark(st.h):''}
+  </div>`;
+}
+function fmtDate(ts){try{return new Date(ts).toLocaleString('ru-RU',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});}catch(e){return '';}}
+function roundTop(x,y,w,h,r){
+  if(h<=0)return '';r=Math.min(r,h,w/2);
+  return `M${f1(x)} ${f1(y+h)}V${f1(y+r)}Q${f1(x)} ${f1(y)} ${f1(x+r)} ${f1(y)}H${f1(x+w-r)}Q${f1(x+w)} ${f1(y)} ${f1(x+w)} ${f1(y+r)}V${f1(y+h)}Z`;
+}
+function runChart(runs){
+  const last=runs.slice(-12),n=last.length,off=runs.length-n;
+  const W=400,H=200,ml=32,mr=10,mt=18,mb=28,pw=W-ml-mr,ph=H-mt-mb;
+  const Y=v=>mt+ph-v/32*ph;const slot=pw/Math.max(n,6),bw=Math.min(34,slot*.62);
+  const best=Math.max(...last.map(r=>r.g)),lastIdx=n-1,bestIdx=last.map(r=>r.g).lastIndexOf(best);
+  let g='';
+  [0,8,16,24,32].forEach(v=>{g+=`<line class="${v===0?'pax':v===32?'pmax':'pg'}" x1="${ml}" y1="${f1(Y(v))}" x2="${W-mr}" y2="${f1(Y(v))}"/>`;});
+  [0,16,32].forEach(v=>{g+=`<text x="${ml-6}" y="${f1(Y(v)+4)}" text-anchor="end">${v}</text>`;});
+  g+=`<text x="${W-mr}" y="${f1(Y(32)-5)}" text-anchor="end">максимум 32</text>`;
+  last.forEach((r,i)=>{
+    const x=ml+slot*i+(slot-bw)/2,y1=Y(r.a),y2=Y(r.a+r.b);
+    const num=off+i+1;
+    const tip=`Вариант №${num}, ${fmtDate(r.ts)}: ${r.g} из ${r.m} (часть 1: ${r.a} из 12, часть 2: ${r.b} из 20)`;
+    let bars='';
+    if(r.a>0)bars+=r.b>0?`<rect class="s1" x="${f1(x)}" y="${f1(y1)}" width="${f1(bw)}" height="${f1(Y(0)-y1)}"/>`:`<path class="s1" d="${roundTop(x,y1,bw,Y(0)-y1,4)}"/>`;
+    if(r.b>0){const top=y2,h2=Math.max(0,(r.a>0?y1-2:Y(0))-top);bars+=`<path class="s2" d="${roundTop(x,top,bw,h2,4)}"/>`;}
+    const lbl=(i===lastIdx||i===bestIdx)?`<text class="tv" x="${f1(x+bw/2)}" y="${f1(y2-5)}" text-anchor="middle">${r.g}</text>`:'';
+    g+=`<g class="bargrp"><title>${tip}</title><rect class="hit" x="${f1(ml+slot*i)}" y="${mt}" width="${f1(slot)}" height="${ph}"/>${bars}${lbl}<text x="${f1(x+bw/2)}" y="${H-8}" text-anchor="middle">№${num}</text></g>`;
+  });
+  return `<svg class="pc" viewBox="0 0 ${W} ${H}" role="img" aria-label="Баллы за последние ${n} полных вариантов, максимум 32">${g}</svg>`;
+}
+function fullBlock(runs){
+  if(!runs.length)return `<div class="empty"><b>Пока нет результатов.</b> Пройдите полный вариант на 19 заданий. После него здесь появятся баллы за каждую попытку, график и динамика. История ведётся с момента добавления этой вкладки.<div class="ansrow" style="margin-top:12px"><button class="btn" data-act="variant" data-kind="full">Решить полный вариант</button></div></div>`;
+  const n=runs.length,lastR=runs[n-1],best=Math.max(...runs.map(r=>r.g)),avg=runs.reduce((a,r)=>a+r.g,0)/n;
+  const d=n>1?lastR.g-runs[n-2].g:null;
+  const rows=runs.slice(-10).reverse().map((r,i)=>`<tr><td>№${n-i}</td><td>${fmtDate(r.ts)}</td><td class="tot">${r.g} из ${r.m}</td><td>${r.a} из 12</td><td>${r.b} из 20</td></tr>`).join('');
+  return `<div class="summary"><span>Вариантов решено: <b>${n}</b></span><span>Лучший: <b>${best}</b> из 32</span><span>Последний: <b>${lastR.g}</b> из 32${d===null?'':` (${d>0?'+':d<0?'−':'±'}${Math.abs(d)} к прошлому)`}</span><span>Среднее: <b>${N(Math.round(avg*10)/10)}</b></span></div>
+  <div class="chartbox">${runChart(runs)}
+    <div class="legend"><span><i class="sw s1"></i>Часть 1, до 12</span><span><i class="sw s2"></i>Часть 2, до 20 (самооценка)</span></div>
+  </div>
+  <div class="tblwrap"><table class="rtable"><thead><tr><th>Попытка</th><th>Дата</th><th>Итого</th><th>Часть 1</th><th>Часть 2</th></tr></thead><tbody>${rows}</tbody></table></div>
+  <p class="hint">Показаны последние 10 попыток, на графике до 12. Баллы за часть 2 вы ставите себе сами.</p>`;
+}
+function progress(){
+  const rows=T.map(t=>({t,st:taskStat(t)}));
+  const started=rows.filter(r=>r.st).length;
+  const weak=rows.filter(r=>r.st&&r.st.att>=2&&r.st.pct<50).sort((a,b)=>a.st.pct-b.st.pct).slice(0,3);
+  const runs=(store.runs||[]).filter(r=>r.k==='full');
+  const p1=rows.filter(r=>!r.t.p2),p2=rows.filter(r=>r.t.p2);
+  app.innerHTML=`${tabs('progress')}
+  <header><div class="tag">Прогресс</div><h1>Как идёт подготовка</h1>
+  <p class="lead">Сверху результаты по каждому заданию, ниже история полных вариантов.</p></header>
+  <div class="summary"><span>Начато заданий: <b>${started}</b> из 19</span>${weak.length?`<span>Слабые места: <b>${weak.map(r=>'№'+r.t.n).join(', ')}</b></span>`:''}</div>
+  <div class="sec"><h2>По заданиям</h2><span>Доля верных ответов (часть 1) и набранных баллов (часть 2) за все попытки. Столбики справа — последние 10 попыток, самая свежая справа.</span></div>
+  <div class="legend"><span>✓ освоено: от 80%</span><span>◐ в процессе: 50–79%</span><span>! слабое место: ниже 50%</span></div>
+  <div class="plist"><div class="pgroup">Часть 1 · ответ проверяется автоматически</div>${p1.map(r=>prow(r.t)).join('')}<div class="pgroup">Часть 2 · баллы по самооценке</div>${p2.map(r=>prow(r.t)).join('')}</div>
+  <div class="sec"><h2>Полный вариант</h2><span>19 заданий, до 32 баллов.</span></div>
+  ${fullBlock(runs)}`;
+}
+
+function render(){({home,practice,variant,result,progress})[S.view]();}
+function go(s){S=s;render();window.scrollTo(0,0);}
+
+function check(){
+  const el=document.getElementById('ans');const raw=el.value;const v=parse(raw);
+  if(isNaN(v)){S.msg='Введите число: целое или конечную десятичную дробь.';render();return;}
+  S.msg='';const ok=same(v,S.cur.a);S.done=true;S.tot++;if(ok)S.ok++;S.res={ok,raw};rec(S.n,ok);render();
+}
+function nextQ(){S.cur=make(S.n,S.cur.q);S.done=false;S.res=null;S.msg='';S.expOpen=false;S.solOpen=false;S.rev=0;S.sc=null;render();window.scrollTo(0,0);}
+function vnext(){
+  const c=S.items[S.i],t=T[c.n-1];
+  if(t.p2){if(S.scs[S.i]===null||S.scs[S.i]===undefined)return;}
+  else{const el=document.getElementById('ans');if(el)S.ans[S.i]=el.value;}
+  if(S.i<S.items.length-1){S.i++;S.expOpen=false;S.rev=0;render();window.scrollTo(0,0);}
+  else{S.items.forEach((it,k)=>{const tt=T[it.n-1];if(tt.p2)rec2(it.n,S.scs[k]||0,tt.max);else{const v=parse(S.ans[k]||'');rec(it.n,!isNaN(v)&&same(v,it.a));}});saveRun();S.view='result';render();window.scrollTo(0,0);}
+}
+function giveScore(k){
+  if(S.view==='variant'){if(S.scs[S.i]!==null&&S.scs[S.i]!==undefined)return;S.scs[S.i]=k;}
+  else{if(S.sc!==null&&S.sc!==undefined)return;const t=T[S.n-1];S.sc=k;S.pts+=k;S.ptsMax+=t.max;rec2(S.n,k,t.max);}
+  render();
+}
+function toggleExp(b){
+  S.expOpen=!S.expOpen;const p=document.getElementById('exp');if(p)p.hidden=!S.expOpen;
+  b.setAttribute('aria-expanded',S.expOpen?'true':'false');b.textContent=S.expOpen?'Скрыть объяснение':'Объяснение';
+}
+function showSol(b){S.solOpen=true;const x=document.getElementById('solbox');if(x)x.hidden=false;b.hidden=true;}
+
+app.addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]');if(!b||b.disabled)return;const a=b.dataset.act;
+  if(a==='home'){resetArmed=false;go({view:'home'});}
+  else if(a==='topic'){const n=+b.dataset.n;go({view:'practice',n,ok:0,tot:0,pts:0,ptsMax:0,cur:make(n),done:false,res:null,msg:'',expOpen:false,solOpen:false,rev:0,sc:null});}
+  else if(a==='variant'){const kind=b.dataset.kind||'full';const list=T.filter(t=>kind==='p1'?!t.p2:kind==='p2'?t.p2:true);
+    go({view:'variant',kind,i:0,items:list.map(t=>make(t.n)),ans:[],scs:list.map(()=>null),expOpen:false,rev:0});}
+  else if(a==='tab'){resetArmed=false;go({view:b.dataset.tab==='progress'?'progress':'home'});}
+  else if(a==='check')check();
+  else if(a==='next')nextQ();
+  else if(a==='vnext')vnext();
+  else if(a==='exp')toggleExp(b);
+  else if(a==='showsol')showSol(b);
+  else if(a==='rev1'){S.rev=1;render();}
+  else if(a==='rev2'){S.rev=2;render();}
+  else if(a==='score')giveScore(+b.dataset.v);
+  else if(a==='reset'){
+    if(resetArmed){store={t:{},runs:[]};saveStore();resetArmed=false;clearTimeout(resetTimer);render();}
+    else{resetArmed=true;render();resetTimer=setTimeout(()=>{resetArmed=false;if(S.view==='home')render();},4000);}
+  }
+});
+app.addEventListener('keydown',e=>{
+  if(e.key!=='Enter')return;
+  if(e.target.id!=='ans')return;
+  if(S.view==='practice'){e.preventDefault();S.done?nextQ():check();}
+  else if(S.view==='variant'){e.preventDefault();vnext();}
+});
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&S.view==='practice'&&S.done&&document.activeElement===document.body){nextQ();}});
+
+render();
+</script>
+
+</body></html>
